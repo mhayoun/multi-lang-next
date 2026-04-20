@@ -4,7 +4,7 @@ import NewsSection from '@/components/admin/NewsSection';
 import MenuSection from '@/components/admin/MenuSection';
 import LogoSection from '@/components/admin/LogoSection';
 import AdminTabs from '@/components/admin/AdminTabs';
-import { useAdminLogic } from '@/components/admin/useAdminLogic';
+import {useAdminLogic} from '@/components/admin/useAdminLogic';
 
 const AdminInterface = ({logic, currentLang = 'he'}) => {
     const isHe = currentLang === 'he';
@@ -13,7 +13,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
     const {
         activeTab, setActiveTab, openItems, toggleAccordion, updateLogo,
         updateMenuBg, updateMenuTitle, updateNewsTitle, linkItemToNews, unlinkItemFromNews,
-        linkItemToSub, unlinkItemFromSub
+        linkItemToSub, unlinkItemFromSub, publishToCloud
     } = useAdminLogic(logic);
 
     // Destructure data and generic actions from logic prop
@@ -25,6 +25,20 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
 
     return (
         <div className="space-y-8 max-w-4xl mx-auto pb-20 px-4" dir={isHe ? "rtl" : "ltr"}>
+
+            {/* Add this inside your return, maybe above the LogoSection */}
+            <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                <div>
+                    <h2 className="text-blue-800 font-bold">{isHe ? 'ניהול אתר' : 'Site Management'}</h2>
+                    <p className="text-blue-600 text-sm">{isHe ? 'שמור את כל השינויים לענן' : 'Save all changes to the cloud'}</p>
+                </div>
+                <button
+                    onClick={publishToCloud}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-medium transition-colors shadow-lg flex items-center gap-2"
+                >
+                    <span>{isHe ? 'פרסם שינויים' : 'Publish Changes'}</span>
+                </button>
+            </div>
 
             {/* 1. Logo Management */}
             <LogoSection
