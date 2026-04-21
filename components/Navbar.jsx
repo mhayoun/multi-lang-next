@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Settings, User, LogOut, Menu, X } from 'lucide-react';
-import { LANGUAGES } from '@/lib/data';
-import { signIn, signOut, useSession } from "next-auth/react";
+import React, {useState} from 'react';
+import {Settings, User, LogOut, Menu, X} from 'lucide-react';
+import {LANGUAGES} from '@/lib/data';
+import {signIn, signOut, useSession} from "next-auth/react";
 
-const Navbar = ({ logic, uiText }) => {
-    const { data: session } = useSession();
+const Navbar = ({logic, uiText}) => {
+    const {data: session} = useSession();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleHomeClick = () => {
@@ -35,7 +35,7 @@ const Navbar = ({ logic, uiText }) => {
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                     >
-                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        {isMenuOpen ? <X size={24}/> : <Menu size={24}/>}
                     </button>
 
                     {/* Logo */}
@@ -67,7 +67,8 @@ const Navbar = ({ logic, uiText }) => {
                                     </button>
 
                                     {hasSubItems && !isSingleItem && (
-                                        <div className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] z-[60]">
+                                        <div
+                                            className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] z-[60]">
                                             {menu.subItems.map((sub) => (
                                                 <button
                                                     key={sub.id}
@@ -122,13 +123,18 @@ const Navbar = ({ logic, uiText }) => {
                     <div className="border-l border-slate-200 pl-4 h-8 flex items-center">
                         {session ? (
                             <div className="flex items-center gap-2">
-                                <img src={session.user.image} className="w-8 h-8 rounded-full border shadow-sm" alt="Profile" />
-                                <button onClick={handleSignOut} className="p-1.5 text-slate-400 hover:text-red-500 rounded-full transition-all">
-                                    <LogOut size={16} />
+                                <img src={session.user.image} className="w-8 h-8 rounded-full border shadow-sm"
+                                     alt="Profile"/>
+                                <button onClick={handleSignOut}
+                                        className="p-1.5 text-slate-400 hover:text-red-500 rounded-full transition-all">
+                                    <LogOut size={16}/>
                                 </button>
                             </div>
                         ) : (
-                            <button onClick={() => signIn("google")} className="text-sm font-semibold text-blue-600">
+                            <button
+                                onClick={() => signIn("google")}
+                                className="text-[10px] uppercase tracking-widest text-slate-300 hover:text-blue-400 transition-colors duration-300"
+                            >
                                 Login
                             </button>
                         )}
@@ -138,7 +144,8 @@ const Navbar = ({ logic, uiText }) => {
 
             {/* --- MOBILE MENU OVERLAY --- */}
             {isMenuOpen && (
-                <div className="md:hidden border-t border-slate-100 bg-white p-4 space-y-4 animate-in slide-in-from-top duration-200">
+                <div
+                    className="md:hidden border-t border-slate-100 bg-white p-4 space-y-4 animate-in slide-in-from-top duration-200">
                     {logic.menuData.map((menu) => (
                         <div key={menu.id} className="space-y-1">
                             <div className="text-[10px] font-black text-slate-400 px-3 uppercase tracking-widest">
