@@ -1,10 +1,9 @@
 import React from 'react';
-import {Settings, User} from 'lucide-react';
+import {Settings, User, LogOut} from 'lucide-react'; // Added LogOut icon
 import {LANGUAGES} from '@/lib/data';
-import {signIn, useSession} from "next-auth/react";
+import {signIn, signOut, useSession} from "next-auth/react"; // Added signOut
 
 const Navbar = ({logic, uiText}) => {
-
     const {data: session} = useSession();
 
     const handleHomeClick = () => {
@@ -17,15 +16,34 @@ const Navbar = ({logic, uiText}) => {
         logic.setView('user');
     };
 
-    return (
-        <nav
-            className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-3 flex justify-between items-center shadow-sm">
-            <div className="flex items-center gap-6">
+    // Recommended: Reset view to 'user' on logout so you don't stay on an admin screen
+    const handleSignOut = () => {
+        logic.setView('user');
+        signOut();
+    };
 
+    return (
+        <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-3 flex justify-between items-center shadow-sm">
+            <div className="flex items-center gap-6">
+                {/* --- PROFILE / LOGIN SECTION --- */}
                 {session ? (
-                    <img src={session.user.image} className="w-8 h-8 rounded-full border-2 border-blue-500"/>
+                    <div className="group relative flex items-center gap-2">
+                        <img
+                            src={session.user.image}
+                            className="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer"
+                            alt="Profile"
+                        />
+                        {/* A small logout button that appears next to/on hover */}
+                        <button
+                            onClick={handleSignOut}
+                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                            title="Sign Out"
+                        >
+                            <LogOut size={16} />
+                        </button>
+                    </div>
                 ) : (
-                    <button onClick={() => signIn("google")} className="text-xs text-slate-400">
+                    <button onClick={() => signIn("google")} className="text-xs text-slate-400 hover:text-blue-600 transition-colors">
                         Login
                     </button>
                 )}
@@ -51,9 +69,6 @@ const Navbar = ({logic, uiText}) => {
 
                         return (
                             <div key={menu.id} className="relative group h-full flex items-center">
-                                {/* Logic: If exactly 1 item, main button triggers that item.
-                                  Otherwise, it's just a label for the dropdown.
-                                */}
                                 <button
                                     onClick={() => isSingleItem && handleSubItemClick(menu.subItems[0])}
                                     className={`font-medium transition-colors py-2 ${
@@ -63,12 +78,10 @@ const Navbar = ({logic, uiText}) => {
                                     {logic.t(menu.title)}
                                 </button>
 
-                                {/* Only show dropdown if there are 2 or more items */}
                                 {hasSubItems && !isSingleItem && (
                                     <>
                                         <div className="absolute top-full left-0 w-full h-2 bg-transparent"/>
-                                        <div
-                                            className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
+                                        <div className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
                                             {menu.subItems.map((sub) => (
                                                 <button
                                                     key={sub.id}
