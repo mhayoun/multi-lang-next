@@ -92,20 +92,26 @@ const Navbar = ({logic, uiText}) => {
 
             {/* --- RIGHT SIDE CONTROLS --- */}
             <div className="flex items-center gap-4">
-                <div className="flex bg-slate-100 rounded-lg p-1">
-                    <button
-                        onClick={() => logic.setView('user')}
-                        className={`px-3 py-1 rounded-md text-sm flex items-center gap-2 transition-all ${logic.view === 'user' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        <User size={16}/> {uiText.user}
-                    </button>
-                    <button
-                        onClick={() => logic.setView('admin')}
-                        className={`px-3 py-1 rounded-md text-sm flex items-center gap-2 transition-all ${logic.view === 'admin' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        <Settings size={16}/> {uiText.switch}
-                    </button>
-                </div>
+                {session && (
+                    <div className="flex bg-slate-100 rounded-lg p-1">
+                        <button
+                            onClick={() => logic.setView('user')}
+                            className={`px-3 py-1 rounded-md text-sm flex items-center gap-2 transition-all ${
+                                logic.view === 'user' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                            <User size={16}/> {uiText.user}
+                        </button>
+                        <button
+                            onClick={() => logic.setView('admin')}
+                            className={`px-3 py-1 rounded-md text-sm flex items-center gap-2 transition-all ${
+                                logic.view === 'admin' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                            <Settings size={16}/> {uiText.switch}
+                        </button>
+                    </div>
+                )}
 
                 <select
                     value={logic.lang}
