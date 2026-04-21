@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 // This automatically looks for KV_REST_API_URL and KV_REST_API_TOKEN
 const redis = Redis.fromEnv();
+export const dynamic = 'force-dynamic'; // This stops Next.js from caching the GET request
 
 export async function GET() {
   try {
