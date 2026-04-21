@@ -4,16 +4,24 @@ import { UpstashRedisAdapter } from "@auth/upstash-redis-adapter"
 import { Redis } from "@upstash/redis"
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  // Utilisation des variables générées par Vercel
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
 })
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: UpstashRedisAdapter(redis),
-  providers: [Google],
+  providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    })
+  ],
+  trustHost: true,
+  secret: process.env.AUTH_SECRET,
   callbacks: {
-    // Optional: Restrict login to ONLY your email
     async signIn({ user }) {
+      // Remplacez par votre email pour bloquer l'accès aux autres
       const allowedEmails = ["yelotag@gmail.com"];
       return allowedEmails.includes(user.email ?? "");
     },
