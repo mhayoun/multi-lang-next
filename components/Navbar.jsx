@@ -1,7 +1,7 @@
 import React from 'react';
-import {Settings, User, LogOut} from 'lucide-react'; // Added LogOut icon
+import {Settings, User, LogOut} from 'lucide-react';
 import {LANGUAGES} from '@/lib/data';
-import {signIn, signOut, useSession} from "next-auth/react"; // Added signOut
+import {signIn, signOut, useSession} from "next-auth/react";
 
 const Navbar = ({logic, uiText}) => {
     const {data: session} = useSession();
@@ -16,7 +16,6 @@ const Navbar = ({logic, uiText}) => {
         logic.setView('user');
     };
 
-    // Recommended: Reset view to 'user' on logout so you don't stay on an admin screen
     const handleSignOut = () => {
         logic.setView('user');
         signOut();
@@ -25,29 +24,6 @@ const Navbar = ({logic, uiText}) => {
     return (
         <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-3 flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-6">
-                {/* --- PROFILE / LOGIN SECTION --- */}
-                {session ? (
-                    <div className="group relative flex items-center gap-2">
-                        <img
-                            src={session.user.image}
-                            className="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer"
-                            alt="Profile"
-                        />
-                        {/* A small logout button that appears next to/on hover */}
-                        <button
-                            onClick={handleSignOut}
-                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                            title="Sign Out"
-                        >
-                            <LogOut size={16} />
-                        </button>
-                    </div>
-                ) : (
-                    <button onClick={() => signIn("google")} className="text-xs text-slate-400 hover:text-blue-600 transition-colors">
-                        Login
-                    </button>
-                )}
-
                 {/* --- LOGO / HOME BUTTON --- */}
                 <button
                     onClick={handleHomeClick}
@@ -135,6 +111,33 @@ const Navbar = ({logic, uiText}) => {
                         <option key={code} value={code}>{info.label}</option>
                     ))}
                 </select>
+
+                {/* --- PROFILE / LOGIN SECTION (Moved to the end) --- */}
+                <div className="border-l border-slate-200 pl-4 ml-2 h-8 flex items-center">
+                    {session ? (
+                        <div className="flex items-center gap-2">
+                            <img
+                                src={session.user.image}
+                                className="w-8 h-8 rounded-full border border-slate-200 shadow-sm"
+                                alt="Profile"
+                            />
+                            <button
+                                onClick={handleSignOut}
+                                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                title="Sign Out"
+                            >
+                                <LogOut size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => signIn("google")}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                        >
+                            Login
+                        </button>
+                    )}
+                </div>
             </div>
         </nav>
     );
