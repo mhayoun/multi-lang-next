@@ -1,5 +1,5 @@
 import React from 'react';
-import {FileText, ChevronRight, ChevronLeft, Download, Eye, Loader2} from 'lucide-react';
+import {FileText, ChevronRight, ChevronLeft, Download, Eye, Loader2, MessageCircle} from 'lucide-react';
 import GalleryBanderole from './GalleryBanderole.jsx';
 import {useState} from 'react';
 
@@ -25,6 +25,47 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
         ...(activeSubItem.images || []).map(url => ({url, type: 'image'}))
     ];
 
+
+    const WhatsAppButton = ({htmlContent, isHe, activityTitle}) => {
+        // 1. Strip HTML tags
+        const plainText = htmlContent.replace(/<[^>]*>?/gm, '');
+
+        // 2. Updated Regex: Specifically looks for numbers starting with 05 (Israel Mobile)
+        // Matches 05X-XXXXXXX, 05XXXXXXXX, 05X XXXXXXX
+        const mobileRegex = /05\d[- ]?\d{7}/g;
+        const matches = plainText.match(mobileRegex);
+
+        // If no mobile number is found, don't show the button
+        if (!matches || matches.length === 0) return null;
+
+        // 3. Take the FIRST valid mobile number found
+        const firstMatch = matches[0];
+        const rawNumber = firstMatch.replace(/\D/g, '');
+
+        // Format for WhatsApp (9725...)
+        const formattedNumber = `972${rawNumber.substring(1)}`;
+
+        // 4. Prepare Message
+        const defaultMsg = isHe
+            ? `שלום, אני מתעניין בפעילות "${activityTitle}". אשמח לפרטים נוספים.`
+            : `Hi, I am interested in the activity "${activityTitle}". Please contact me as soon as possible.`;
+
+        const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(defaultMsg)}`;
+
+        return (
+            <div className={`mb-12 flex ${isHe ? 'justify-start' : 'justify-start'} w-full`}>
+                <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 bg-[#25D366] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-green-200 hover:scale-[1.02] transition-all active:scale-95"
+                >
+                    <MessageCircle size={22} fill="white"/>
+                    <span>{isHe ? 'שלח וואטסאפ' : 'WhatsApp Message'}</span>
+                </a>
+            </div>
+        );
+    };
     return (
         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4" dir={isHe ? 'rtl' : 'ltr'}>
             {/* BACK BUTTON */}
@@ -49,6 +90,9 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
                 className={`text-xl leading-relaxed text-slate-600 mb-12 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-blue-500`}
                 dangerouslySetInnerHTML={{__html: t(activeSubItem.content)}}
             />
+
+            {/* AUTOMATIC WHATSAPP BUTTON */}
+            <WhatsAppButton htmlContent={t(activeSubItem.content)} isHe={isHe} activityTitle={t(activeSubItem.title)}/>
 
             {/* GALLERY (IMAGES & VIDEOS) */}
             {allMedia.length > 0 && (
