@@ -14,7 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     // Optional: Restrict login to ONLY your email
     async signIn({ user }) {
-      const allowedEmails = ["your-email@gmail.com"];
+      const allowedEmails = ["yelotag@gmail.com"];
       return allowedEmails.includes(user.email ?? "");
     },
   },
