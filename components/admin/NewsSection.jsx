@@ -1,18 +1,18 @@
 import React from 'react';
-import {Plus, Newspaper} from 'lucide-react';
+import { Plus, Newspaper, Trash2 } from 'lucide-react';
 import SubMenuEditor from '@/components/admin/SubMenuEditor';
 import SliderLinker from '@/components/admin/SliderLinker';
 import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
 
 const NewsSection = ({
-                         newsData, menuData, isHe, t, openItems, toggleAccordion,
-                         updateNewsTitle, linkItemToNews, unlinkItemFromNews,
-                         removeNews, addNews, handleFileUpload, removeFile, setNewsData, moveNews
-                     }) => {
+    newsData, menuData, isHe, t, openItems, toggleAccordion,
+    updateNewsTitle, linkItemToNews, unlinkItemFromNews,
+    removeNews, addNews, handleFileUpload, removeFile, setNewsData, moveNews
+}) => {
 
-    // Fonction pour mettre à jour un champ spécifique d'une news (ex: vider l'image)
+    // Met à jour un champ spécifique (ex: bgImage_mob)
     const updateNewsField = (id, field, value) => {
-        setNewsData(prev => prev.map(n => n.id === id ? {...n, [field]: value} : n));
+        setNewsData(prev => prev.map(n => n.id === id ? { ...n, [field]: value } : n));
     };
 
     return (
@@ -20,8 +20,8 @@ const NewsSection = ({
             <div className="flex justify-between items-center border-b pb-4 mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">{isHe ? 'ניהול חדשות' : 'News Management'}</h2>
                 <button onClick={addNews}
-                        className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-lg transition">
-                    <Plus size={18}/> {isHe ? 'פוסט חדש' : 'New Post'}
+                    className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-lg transition">
+                    <Plus size={18} /> {isHe ? 'פוסט חדש' : 'New Post'}
                 </button>
             </div>
 
@@ -39,32 +39,87 @@ const NewsSection = ({
                         icon={Newspaper}
                         isHe={isHe}
                         itemData={news}
+                        // Important: on passe le 5ème argument 'true' pour indiquer que c'est du NewsData
                         onFileUpload={(e, id, type) => handleFileUpload(e, id, null, type, true)}
-                        onUpdateField={updateNewsField}
                         titleInputs={
                             <>
                                 <input
                                     className="border-none bg-transparent font-bold focus:ring-0 text-sm md:text-base"
                                     dir="rtl" placeholder="כותרת בעברית" value={news.title?.he || ''}
-                                    onChange={(e) => updateNewsTitle(news.id, 'he', e.target.value)}/>
+                                    onChange={(e) => updateNewsTitle(news.id, 'he', e.target.value)} />
                                 <input
                                     className="border-none bg-transparent font-bold focus:ring-0 text-sm md:text-base"
                                     dir="ltr" placeholder="English Title" value={news.title?.en || ''}
-                                    onChange={(e) => updateNewsTitle(news.id, 'en', e.target.value)}/>
+                                    onChange={(e) => updateNewsTitle(news.id, 'en', e.target.value)} />
                             </>
                         }
                     >
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">{isHe ? 'תוכן העמוד' : 'Page Content'}</h4>
-                            <SubMenuEditor sub={news} menuId={news.id} isHe={isHe}
-                                           handleFileUpload={(e, tid, sid, type) => handleFileUpload(e, tid, sid, type, true)}
-                                           removeFile={(tid, sid, type, idx) => removeFile(tid, sid, type, idx, true)}
-                                           setMenuData={setNewsData} menuData={newsData}/>
-                        </div>
+                        {/* --- CONTENU DE LA NEWS --- */}
+                        <div className="space-y-6">
 
-                        <SliderLinker isHe={isHe} menuData={menuData} linkedItemIds={news.linkedItemIds}
-                                      onLink={(itemId) => linkItemToNews(news.id, itemId)}
-                                      onUnlink={(itemId) => unlinkItemFromNews(news.id, itemId)} t={t}/>
+                            {/* SECTION IMAGES DE FOND (DANS L'ACCORDION) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                {/* MOBILE */}
+                                <div className="space-y-2">
+                                    <label className="font-bold text-slate-400 block text-[10px] uppercase">
+                                        {isHe ? 'תמונת רקע מובייל' : 'Mobile Background Image'}
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleFileUpload(e, news.id, null, 'bgImage_mob', true)}
+                                        className="text-[10px] w-full file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                                    />
+                                    {news.bgImage_mob && (
+                                        <div className="relative w-12 h-20 mt-2 group">
+                                            <img src={news.bgImage_mob} className="w-full h-full object-cover rounded border shadow-sm" alt="preview" />
+                                            <button
+                                                onClick={() => updateNewsField(news.id, 'bgImage_mob', '')}
+                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm z-10"
+                                            >
+                                                <Trash2 size={10} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* WEB */}
+                                <div className="space-y-2">
+                                    <label className="font-bold text-slate-400 block text-[10px] uppercase">
+                                        {isHe ? 'תמונת רקע סליידר (Web)' : 'Web Background Image (Slider)'}
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleFileUpload(e, news.id, null, 'bgImage_web', true)}
+                                        className="text-[10px] w-full file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                                    />
+                                    {news.bgImage_web && (
+                                        <div className="relative w-24 h-10 mt-2 group">
+                                            <img src={news.bgImage_web} className="w-full h-full object-cover rounded border shadow-sm" alt="preview" />
+                                            <button
+                                                onClick={() => updateNewsField(news.id, 'bgImage_web', '')}
+                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm z-10"
+                                            >
+                                                <Trash2 size={10} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">{isHe ? 'תוכן הדף' : 'Page Content'}</h4>
+                                <SubMenuEditor sub={news} menuId={news.id} isHe={isHe}
+                                    handleFileUpload={(e, tid, sid, type) => handleFileUpload(e, tid, sid, type, true)}
+                                    removeFile={(tid, sid, type, idx) => removeFile(tid, sid, type, idx, true)}
+                                    setMenuData={setNewsData} menuData={newsData} />
+                            </div>
+
+                            <SliderLinker isHe={isHe} menuData={menuData} linkedItemIds={news.linkedItemIds}
+                                onLink={(itemId) => linkItemToNews(news.id, itemId)}
+                                onUnlink={(itemId) => unlinkItemFromNews(news.id, itemId)} t={t} />
+                        </div>
                     </EditorAccordionItem>
                 ))}
             </div>
