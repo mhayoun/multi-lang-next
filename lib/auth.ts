@@ -21,10 +21,19 @@ export const {handlers, auth, signIn, signOut} = NextAuth({
     secret: process.env.AUTH_SECRET,
     callbacks: {
         async signIn({user}) {
-            // Remplacez par votre email pour bloquer l'accès aux autres
-            const allowedEmails = ["yelotag@gmail.com", "work2gs@gmail.com",
-                "joetiger05@gmail.com", "info@beithanoar.org.il"];
-            return allowedEmails.includes(user.email ?? "");
+            const allowedEmails = [
+                "yelotag@gmail.com",
+                "work2gs@gmail.com",
+                "joetiger05@gmail.com",
+                "info@beithanoar.org.il"
+            ];
+
+            // On nettoie l'email reçu
+            const email = user.email?.toLowerCase().trim();
+
+            if (!email) return false;
+
+            return allowedEmails.includes(email);
         },
     },
 })
