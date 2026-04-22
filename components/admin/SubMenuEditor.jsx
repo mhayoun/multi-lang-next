@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2,
-  GripVertical, Copy, Check, Video
+  GripVertical, Copy, Check, Video, ExternalLink
 } from 'lucide-react';
 import { useSubMenuEditor } from '@/components/admin/useSubMenuEditor';
 
@@ -153,6 +153,18 @@ const SubMenuEditor = ({
                   {logic.copied ? <Check size={12} /> : <Copy size={12} />}
                   {isHe ? (logic.copied ? 'הועתק!' : 'העתק תוכן') : (logic.copied ? 'Copied!' : 'Copy Content')}
                 </button>
+
+                {/* Bouton vers l'éditeur HTML externe */}
+                <a
+                  href="https://bestonlinehtmleditor.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
+                >
+                  <ExternalLink size={12} />
+                  {isHe ? 'עורך HTML חיצוני' : 'HTML Editor'}
+                </a>
+
               </div>
               <button onClick={() => logic.setIsModalOpen(false)} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full transition"><X size={24} /></button>
             </div>

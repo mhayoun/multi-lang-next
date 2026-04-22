@@ -1,5 +1,5 @@
 import React from 'react';
-import {Plus, Upload} from 'lucide-react';
+import {Plus, Trash2} from 'lucide-react';
 import SubMenuEditor from '@/components/admin/SubMenuEditor';
 import SliderLinker from '@/components/admin/SliderLinker';
 import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
@@ -47,50 +47,43 @@ const MenuSection = ({
                 >
                     <div
                         className="flex flex-col md:flex-row items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
-                        {/* Section Couleur */}
-                        <div className="flex items-center gap-2 bg-white border rounded-lg p-1 pr-3 shrink-0">
-                            <input
-                                type="color"
-                                className="w-8 h-8 p-0 border-0 cursor-pointer bg-transparent"
-                                value={menu.color || '#cbd5e1'}
-                                onChange={(e) => setMenuData(menuData.map(m =>
-                                    m.id === menu.id ? {...m, color: e.target.value} : m
-                                ))}
-                            />
-                            <input
-                                type="text"
-                                className="w-20 bg-transparent border-0 p-0 text-xs font-mono outline-none text-slate-600"
-                                value={menu.color || '#cbd5e1'}
-                                onChange={(e) => setMenuData(menuData.map(m =>
-                                    m.id === menu.id ? {...m, color: e.target.value} : m
-                                ))}
-                            />
-                        </div>
-
                         {/* Section Image / URL */}
-                        <div className="flex flex-1 items-center gap-2 w-full">
-                            <input
-                                className="flex-1 bg-white border p-2 rounded-lg text-sm outline-none"
-                                value={menu.bgImage || ''}
-                                onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? {
-                                    ...m,
-                                    bgImage: e.target.value
-                                } : m))}
-                                placeholder={isHe ? "כתובת תמונה..." : "Background URL..."}
-                            />
+                        <div className="space-y-2">
+    {/* Label traduit */}
+    <label className="font-bold text-slate-400 block text-[10px] uppercase">
+        {isHe ? 'תמונת רקע לכרטיס' : 'Card background image'}
+    </label>
 
-                            <label
-                                className="cursor-pointer bg-white border px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-100 transition shrink-0 shadow-sm">
-                                <Upload size={14}/>
-                                <span>{isHe ? 'העלאה' : 'Upload'}</span>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => updateMenuBg(e, menu.id)}
-                                    className="hidden"
-                                />
-                            </label>
-                        </div>
+    {/* Input File - Notez qu'on a retiré "multiple" */}
+    <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => updateMenuBg(e, menu.id)}
+        className="text-[10px] w-full file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+    />
+
+    {/* Affichage de la preview si une image existe */}
+    {menu.bgImage && (
+        <div className="flex gap-2 mt-2">
+            <div className="relative w-16 h-10 group">
+                <img
+                    src={menu.bgImage}
+                    className="w-full h-full object-cover rounded border shadow-sm"
+                    alt="background preview"
+                />
+                <button
+                    onClick={() => {
+                        // Logique pour supprimer l'image (remise à null)
+                        setMenuData(menuData.map(m => m.id === menu.id ? { ...m, bgImage: null } : m));
+                    }}
+                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm z-10"
+                >
+                    <Trash2 size={10}/>
+                </button>
+            </div>
+        </div>
+    )}
+</div>
                     </div>
 
                     {/* Menu Specific UI: Sub-items */}
