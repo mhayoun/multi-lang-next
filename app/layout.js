@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Multi-Lang App",
-  description: "Gestion de menu multilingue",
+  title: "בית הנוער העברי",
+  description: "בית קהילתי ירושלמי לכל המשפחה",
 };
 
 export default function RootLayout({ children }) {
