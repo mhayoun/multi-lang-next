@@ -55,18 +55,25 @@ const Navbar = ({logic, uiText}) => {
                         {logic.menuData.map((menu) => {
                             const hasSubItems = menu.subItems && menu.subItems.length > 0;
                             const isSingleItem = menu.subItems && menu.subItems.length === 1;
+                            const isContact = menu.type === 'contact';
                             return (
                                 <div key={menu.id} className="relative group h-full flex items-center">
                                     <button
-                                        onClick={() => isSingleItem && handleSubItemClick(menu.subItems[0])}
+                                        onClick={() => {
+                                            if (isContact) {
+                                                handleSubItemClick(menu); // Treat the menu item itself as the active item
+                                            } else if (isSingleItem) {
+                                                handleSubItemClick(menu.subItems[0]);
+                                            }
+                                        }}
                                         className={`font-medium transition-colors py-2 ${
-                                            isSingleItem ? 'hover:text-blue-600 cursor-pointer' : 'cursor-default'
+                                            (isSingleItem || isContact) ? 'hover:text-blue-600 cursor-pointer' : 'cursor-default'
                                         }`}
                                     >
                                         {logic.t(menu.title)}
                                     </button>
 
-                                    {hasSubItems && !isSingleItem && (
+                                    {hasSubItems && !isSingleItem && !isContact && (
                                         <div
                                             className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] z-[60]">
                                             {menu.subItems.map((sub) => (
@@ -146,22 +153,43 @@ const Navbar = ({logic, uiText}) => {
             {isMenuOpen && (
                 <div
                     className="md:hidden border-t border-slate-100 bg-white p-4 space-y-4 animate-in slide-in-from-top duration-200">
-                    {logic.menuData.map((menu) => (
-                        <div key={menu.id} className="space-y-1">
-                            <div className="text-[10px] font-black text-slate-400 px-3 uppercase tracking-widest">
+                    {logic.menuData.map((menu) => {
+                        const isContact = menu.type === 'contact';
+                        const hasSubItems = menu.subItems && menu.subItems.length > 0;
+
+                        return (
+                            <div key={menu.id} className="space-y-1">
+                                {/* If it's a contact link, make the heading clickable */}
+                                {isContact ? (
+                                    <button
+                                        onClick={() => handleSubItemClick(menu)}
+                                        className="w-full text-start px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    >
+                            <span className="text-[10px] font-black uppercase tracking-widest">
                                 {logic.t(menu.title)}
+                            </span>
+                                    </button>
+                                ) : (
+                                    /* Otherwise, keep it as a standard group label */
+                                    <div
+                                        className="text-[10px] font-black text-slate-400 px-3 uppercase tracking-widest pt-2">
+                                        {logic.t(menu.title)}
+                                    </div>
+                                )}
+
+                                {/* Render sub-items if they exist */}
+                                {hasSubItems && menu.subItems.map((sub) => (
+                                    <button
+                                        key={sub.id}
+                                        onClick={() => handleSubItemClick(sub)}
+                                        className="w-full text-start px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg text-sm font-medium transition-all"
+                                    >
+                                        {logic.t(sub.title)}
+                                    </button>
+                                ))}
                             </div>
-                            {menu.subItems?.map((sub) => (
-                                <button
-                                    key={sub.id}
-                                    onClick={() => handleSubItemClick(sub)}
-                                    className="w-full text-start px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg text-sm font-medium"
-                                >
-                                    {logic.t(sub.title)}
-                                </button>
-                            ))}
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </nav>
