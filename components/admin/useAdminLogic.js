@@ -2,7 +2,7 @@ import {useState} from 'react';
 
 export const useAdminLogic = (logic) => {
     // 1. Ensure 'logo' is extracted from the logic passed in
-    const {menuData, setMenuData, newsData, setNewsData, logo, setLogo} = logic;
+    const {menuData, setMenuData, newsData, setNewsData, logo, setLogo, siteSettings} = logic;
     const [activeTab, setActiveTab] = useState('menu');
     const [openItems, setOpenItems] = useState({});
 
@@ -128,7 +128,7 @@ export const useAdminLogic = (logic) => {
             setTimeout(() => toast.remove(), 500); // Wait for fade animation
         }, 2000);
     };
-    
+
     // --- CLOUD PUBLISHING ---
     const publishToCloud = async () => {
         try {
@@ -138,7 +138,8 @@ export const useAdminLogic = (logic) => {
                 body: JSON.stringify({
                     menuData,
                     newsData,
-                    logo
+                    logo,
+                    siteSettings
                 }),
             });
 

@@ -2,7 +2,10 @@ import React from 'react';
 import LogoSection from '@/components/admin/LogoSection';
 import {Download} from 'lucide-react';
 
-const SettingSection = ({isHe, exportData, logo, setLogo, updateLogo}) => {
+const SettingSection = ({logic, isHe, exportData, logo, setLogo, updateLogo}) => {
+    const settings = logic?.siteSettings || {
+        contact: {email: '', address: {he: '', en: ''}}
+    };
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
 
@@ -16,7 +19,36 @@ const SettingSection = ({isHe, exportData, logo, setLogo, updateLogo}) => {
                 />
             </div>
 
-            {/* Line 2: Data Management / Export */}
+            {/* Line 2: Footer & Contact Management (Now separate) */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 className="font-bold text-lg border-b pb-2 text-slate-800">
+                    {isHe ? 'עריכת פרטי קשר' : 'Edit Contact Info'}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Email</label>
+                        <input
+                            className="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="Email Address"
+                            value={settings.contact?.email || ''}
+                            onChange={(e) => logic.updateSettings('email', e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase px-1">
+                            {isHe ? 'כתובת' : 'Address'}
+                        </label>
+                        <input
+                            className="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder={isHe ? 'הזן כתובת...' : 'Enter address...'}
+                            value={settings.contact?.address?.he || ''}
+                            onChange={(e) => logic.updateSettings('address_he', e.target.value)}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Line 3: Data Management / Export */}
             <div
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-blue-50 p-6 rounded-3xl border border-blue-100 gap-4">
                 <div>
@@ -24,35 +56,15 @@ const SettingSection = ({isHe, exportData, logo, setLogo, updateLogo}) => {
                         {isHe ? 'גיבוי וייצוא נתונים' : 'Data Export & Backup'}
                     </h2>
                     <p className="text-blue-600 text-sm">
-                        {isHe ? 'הורד את נתוני התפריטים והחדשות לקובץ JSON' : 'Download menu and news data to a JSON file'}
+                        {isHe ? 'הורד את נתוני המערכת לקובץ JSON לצורך גיבוי' : 'Download system data to a JSON file for backup'}
                     </p>
-                </div>
-
-                {/* Footer & Contact Management */}
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                    <h3 className="font-bold text-lg border-b pb-2">
-                        {isHe ? 'עריכת פרטי קשר' : 'Edit Contact Info'}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input
-                            className="p-2 border rounded-lg"
-                            placeholder="Email"
-                            value={logic.siteSettings.contact.email}
-                            onChange={(e) => logic.updateSettings('email', e.target.value)}
-                        />
-                        <input
-                            className="p-2 border rounded-lg"
-                            placeholder="Address (Hebrew)"
-                            value={logic.siteSettings.contact.address.he}
-                        />
-                    </div>
                 </div>
 
                 <button
                     onClick={exportData}
-                    className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 px-5 py-2.5 rounded-full font-bold transition-all flex items-center gap-2 text-sm shadow-sm hover:shadow-md active:scale-95"
+                    className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 text-sm shadow-sm hover:shadow-md active:scale-95"
                 >
-                    <Download size={16}/>
+                    <Download size={18}/>
                     <span>{isHe ? 'ייצוא נתונים' : 'Export Data'}</span>
                 </button>
             </div>
