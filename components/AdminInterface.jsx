@@ -23,21 +23,52 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
         moveMenu, moveNews, setMenuData, setNewsData, t
     } = logic;
 
+    // --- NEW EXPORT FUNCTION ---
+    const exportData = () => {
+        const downloadJSON = (data, fileName) => {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const href = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = href;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(href);
+        };
+
+        // Export both files
+        downloadJSON(menuData, 'DEFAULT_MENU.json');
+        downloadJSON(newsData, 'DEFAULT_NEWS.json');
+    };
+
     return (
         <div className="space-y-8 max-w-4xl mx-auto pb-20 px-4" dir={isHe ? "rtl" : "ltr"}>
 
-            {/* Add this inside your return, maybe above the LogoSection */}
+            {/* Management Header */}
             <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
                 <div>
                     <h2 className="text-blue-800 font-bold">{isHe ? 'ניהול אתר' : 'Site Management'}</h2>
-                    <p className="text-blue-600 text-sm">{isHe ? 'שמור את כל השינויים לענן' : 'Save all changes to the cloud'}</p>
+                    <p className="text-blue-600 text-sm">{isHe ? 'שמירה ופרסום של כל השינויים' : 'Save and publish all changes'}</p>
                 </div>
-                <button
-                    onClick={publishToCloud}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-medium transition-colors shadow-lg flex items-center gap-2"
-                >
-                    <span>{isHe ? 'פרסם שינויים' : 'Publish Changes'}</span>
-                </button>
+
+                <div className="flex gap-3">
+                    {/* NEW EXPORT BUTTON */}
+                    <button
+                        onClick={exportData}
+                        className="bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-full font-medium transition-colors flex items-center gap-2 text-sm"
+                        title="Download JSON for DEFAULT_MENU and DEFAULT_NEWS"
+                    >
+                        <span>📥 {isHe ? 'ייצוא קבצי ברירת מחדל' : 'Export Defaults'}</span>
+                    </button>
+
+                    <button
+                        onClick={publishToCloud}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-medium transition-colors shadow-lg flex items-center gap-2"
+                    >
+                        <span>{isHe ? 'פרסום שינויים' : 'Publish Changes'}</span>
+                    </button>
+                </div>
             </div>
 
             {/* 1. Logo Management */}
