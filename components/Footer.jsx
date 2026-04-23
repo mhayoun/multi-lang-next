@@ -38,7 +38,7 @@ const Footer = ({ data, isHe = true }) => {
     const inputStyle = "w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all";
 
     return (
-        <footer className="bg-slate-950 text-white pt-16 pb-6 px-4 mt-20" dir={isHe ? "rtl" : "ltr"}>
+        <footer id="footer" className="bg-slate-950 text-white pt-16 pb-6 px-4 mt-20" dir={isHe ? "rtl" : "ltr"}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
 
                 {/* Section 1: Working Hours */}

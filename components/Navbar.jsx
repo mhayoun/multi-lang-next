@@ -17,6 +17,12 @@ const Navbar = ({logic, uiText}) => {
         logic.setActiveSubItem(sub);
         logic.setView('user');
         setIsMenuOpen(false);
+
+        // Jump to the top of the page
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // Change to 'instant' if you want no animation
+        });
     };
 
     const handleSignOut = () => {
@@ -61,7 +67,11 @@ const Navbar = ({logic, uiText}) => {
                                     <button
                                         onClick={() => {
                                             if (isContact) {
-                                                handleSubItemClick(menu); // Treat the menu item itself as the active item
+                                                const footer = document.getElementById('footer');
+                                                if (footer) {
+                                                    footer.scrollIntoView({behavior: 'smooth'});
+                                                }
+                                                //handleSubItemClick(menu); // Treat the menu item itself as the active item
                                             } else if (isSingleItem) {
                                                 handleSubItemClick(menu.subItems[0]);
                                             }
