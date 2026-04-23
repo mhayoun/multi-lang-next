@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import {useState} from 'react';
 
 export const useAdminLogic = (logic) => {
     // 1. Ensure 'logo' is extracted from the logic passed in
-    const { menuData, setMenuData, newsData, setNewsData, logo, setLogo } = logic;
+    const {menuData, setMenuData, newsData, setNewsData, logo, setLogo} = logic;
     const [activeTab, setActiveTab] = useState('menu');
     const [openItems, setOpenItems] = useState({});
 
     const toggleAccordion = (id) => {
-        setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
+        setOpenItems(prev => ({...prev, [id]: !prev[id]}));
     };
 
     // --- GENERIC VERCEL UPLOAD HELPER ---
@@ -39,7 +39,7 @@ export const useAdminLogic = (logic) => {
     const updateMenuBg = (e, menuId) => {
         handleVercelUpload(e, (url) => {
             setMenuData(prev => prev.map(m =>
-                m.id === menuId ? { ...m, bgImage: url } : m
+                m.id === menuId ? {...m, bgImage: url} : m
             ));
         });
     };
@@ -47,13 +47,13 @@ export const useAdminLogic = (logic) => {
     // --- DATA UPDATES ---
     const updateMenuTitle = (menuId, lang, value) => {
         setMenuData(prev => prev.map(m =>
-            m.id === menuId ? { ...m, title: { ...m.title, [lang]: value } } : m
+            m.id === menuId ? {...m, title: {...m.title, [lang]: value}} : m
         ));
     };
 
     const updateNewsTitle = (newsId, lang, value) => {
         setNewsData(prev => prev.map(n =>
-            n.id === newsId ? { ...n, title: { ...n.title, [lang]: value } } : n
+            n.id === newsId ? {...n, title: {...n.title, [lang]: value}} : n
         ));
     };
 
@@ -99,7 +99,7 @@ export const useAdminLogic = (logic) => {
             if (n.id === newsId) {
                 const current = n.linkedItemIds || [];
                 if (!current.includes(selectedId)) {
-                    return { ...n, linkedItemIds: [...current, selectedId] };
+                    return {...n, linkedItemIds: [...current, selectedId]};
                 }
             }
             return n;
@@ -108,31 +108,48 @@ export const useAdminLogic = (logic) => {
 
     const unlinkItemFromNews = (newsId, linkedId) => {
         setNewsData(prev => prev.map(n => n.id === newsId ?
-            { ...n, linkedItemIds: (n.linkedItemIds || []).filter(id => id !== linkedId) } : n
+            {...n, linkedItemIds: (n.linkedItemIds || []).filter(id => id !== linkedId)} : n
         ));
     };
 
+    const showToast = (message, type = "success") => {
+        // Create the element
+        const toast = document.createElement("div");
+        toast.innerText = message;
+
+        // Style based on success or error
+        toast.className = `toast-popup ${type}`;
+
+        document.body.appendChild(toast);
+
+        // Remove it after 2 seconds
+        setTimeout(() => {
+            toast.classList.add("fade-out");
+            setTimeout(() => toast.remove(), 500); // Wait for fade animation
+        }, 2000);
+    };
+    
     // --- CLOUD PUBLISHING ---
     const publishToCloud = async () => {
         try {
             const response = await fetch('/api/settings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     menuData,
                     newsData,
-                    logo // Now correctly included from props
+                    logo
                 }),
             });
 
             if (response.ok) {
-                alert("🚀 Changes are now live for everyone!");
+                showToast("🚀 Changes are now live for everyone!", "success");
             } else {
-                alert("❌ Failed to save to the cloud.");
+                showToast("❌ Failed to save to the cloud.", "error");
             }
         } catch (err) {
             console.error("Publish error:", err);
-            alert("❌ Network error while publishing.");
+            showToast("⚠️ Network error while publishing.", "error");
         }
     };
 
@@ -143,6 +160,6 @@ export const useAdminLogic = (logic) => {
         updateMenuTitle, updateNewsTitle,
         linkItemToNews, unlinkItemFromNews,
         linkItemToSub, unlinkItemFromSub,
-        publishToCloud 
+        publishToCloud
     };
 };
