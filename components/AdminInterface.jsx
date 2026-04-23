@@ -1,9 +1,11 @@
 import React from 'react';
 import NewsSection from '@/components/admin/NewsSection';
 import MenuSection from '@/components/admin/MenuSection';
-import SettingSection from '@/components/admin/SettingSection'; // New Import
+import SettingSection from '@/components/admin/SettingSection';
+import MessagesSection from '@/components/admin/MessagesSection';
 import AdminTabs from '@/components/admin/AdminTabs';
 import {useAdminLogic} from '@/components/admin/useAdminLogic';
+
 
 const AdminInterface = ({logic, currentLang = 'he'}) => {
     const isHe = currentLang === 'he';
@@ -57,6 +59,11 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
                         setLogo={setLogo}
                         updateLogo={updateLogo}
                     />
+                )}
+
+                {/* Added Messages Section */}
+                {activeTab === 'messages' && (
+                    <MessagesSection isHe={isHe} />
                 )}
 
                 {activeTab === 'menu' && (

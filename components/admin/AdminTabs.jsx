@@ -1,10 +1,11 @@
 import React from 'react';
-import {LayoutGrid, Newspaper, CloudUpload, Settings} from 'lucide-react';
+import {LayoutGrid, Newspaper, CloudUpload, Settings, Mail} from 'lucide-react';
 
 const AdminTabs = ({activeTab, setActiveTab, isHe, publishToCloud}) => {
     const tabs = [
         {id: 'menu', label: isHe ? 'תפריטים' : 'Menus', icon: LayoutGrid},
         {id: 'news', label: isHe ? 'חדשות' : 'News', icon: Newspaper},
+        {id: 'messages', label: isHe ? 'הודעות' : 'Messages', icon: Mail},
         {id: 'settings', label: isHe ? 'הגדרות' : 'Settings', icon: Settings}
     ];
 
