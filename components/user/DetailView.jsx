@@ -94,12 +94,6 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
             {/* AUTOMATIC WHATSAPP BUTTON */}
             <WhatsAppButton htmlContent={t(activeSubItem.content)} isHe={isHe} activityTitle={t(activeSubItem.title)}/>
 
-            {/* GALLERY (IMAGES & VIDEOS) */}
-            {allMedia.length > 0 && (
-                <GalleryBanderole media={allMedia} isHe={isHe}/>
-            )}
-
-
             {/* PDF DOCUMENTS SECTION */}
             {activeSubItem.pdfs?.length > 0 && (
                 <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem] mt-12 shadow-sm">
@@ -194,6 +188,11 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
                         })}
                     </div>
                 </div>
+            )}
+
+            {/* GALLERY (IMAGES & VIDEOS) */}
+            {allMedia.length > 0 && (
+                <GalleryBanderole media={allMedia} isHe={isHe}/>
             )}
 
             {/* RELATED LINKS */}
