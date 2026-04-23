@@ -1,10 +1,71 @@
-import React from 'react';
-import {FileText, ChevronRight, ChevronLeft, Download, Eye, Loader2, MessageCircle} from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, ChevronRight, ChevronLeft, Download, Eye, Loader2, MessageCircle } from 'lucide-react';
 import GalleryBanderole from './GalleryBanderole.jsx';
-import {useState} from 'react';
 
-const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}) => {
+// 1. EXTRACTED COMPONENT: This handles its own state legally
+const PDFRow = ({ pdf, i, isHe }) => {
+    const [isDownloading, setIsDownloading] = useState(false);
 
+    const pdfUrl = typeof pdf === 'string' ? pdf : pdf.url;
+    const pdfName = typeof pdf === 'string' ? `Document ${i + 1}` : (pdf.name || `Document ${i + 1}`);
+
+    const handleDownload = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+            setIsDownloading(true);
+            const response = await fetch(pdfUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = pdfName.endsWith('.pdf') ? pdfName : `${pdfName}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Download failed", error);
+            window.open(pdfUrl, '_blank');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    return (
+        <div className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-md transition-all group/doc">
+            <div className="flex items-center gap-3 overflow-hidden flex-1 mr-4">
+                <div className="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-1 rounded shrink-0">PDF</div>
+                <span className="font-bold text-slate-700 truncate">{pdfName}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+                <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                    title="Open in new tab"
+                >
+                    <Eye size={20} />
+                </a>
+
+                <button
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                        isDownloading ? 'text-slate-300 bg-slate-50' : 'text-slate-400 hover:text-green-600 hover:bg-green-50'
+                    }`}
+                >
+                    {isDownloading ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const DetailView = ({ activeSubItem, setActiveSubItem, menuData, t, isHe, uiText }) => {
     const getLinkedItemsData = (ids) => {
         if (!ids || !Array.isArray(ids)) return [];
         const foundItems = [];
@@ -18,213 +79,99 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
     };
 
     const linkedItems = getLinkedItemsData(activeSubItem.linkedItemIds);
-
-    // Combine images and videos into one array for the Gallery
     const allMedia = [
-        ...(activeSubItem.videos || []).map(url => ({url, type: 'video'})),
-        ...(activeSubItem.images || []).map(url => ({url, type: 'image'}))
+        ...(activeSubItem.videos || []).map(url => ({ url, type: 'video' })),
+        ...(activeSubItem.images || []).map(url => ({ url, type: 'image' }))
     ];
 
-
-    const WhatsAppButton = ({htmlContent, isHe, activityTitle}) => {
-        // 1. Strip HTML tags
+    const WhatsAppButton = ({ htmlContent, isHe, activityTitle }) => {
         const plainText = htmlContent.replace(/<[^>]*>?/gm, '');
-
-        // 2. Updated Regex: Specifically looks for numbers starting with 05 (Israel Mobile)
-        // Matches 05X-XXXXXXX, 05XXXXXXXX, 05X XXXXXXX
         const mobileRegex = /05\d[- ]?\d{7}/g;
         const matches = plainText.match(mobileRegex);
-
-        // If no mobile number is found, don't show the button
         if (!matches || matches.length === 0) return null;
 
-        // 3. Take the FIRST valid mobile number found
         const firstMatch = matches[0];
         const rawNumber = firstMatch.replace(/\D/g, '');
-
-        // Format for WhatsApp (9725...)
         const formattedNumber = `972${rawNumber.substring(1)}`;
-
-        // 4. Prepare Message
         const defaultMsg = isHe
-            ? `שלום, אני מתעניין בפעילות "${activityTitle}". אשמח לפרטים נוספים.`
-            : `Hi, I am interested in the activity "${activityTitle}". Please contact me as soon as possible.`;
-
-        const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(defaultMsg)}`;
+            ? `שלום, אני מעוניין בפרטים אודות "${activityTitle}". אשמח שתחזרו אלי.`
+            : `Hi, I am interested in "${activityTitle}". Please contact me.`;
 
         return (
-            <div className={`mb-12 flex ${isHe ? 'justify-start' : 'justify-start'} w-full`}>
+            <div className="mb-12 flex justify-start w-full">
                 <a
-                    href={whatsappUrl}
+                    href={`https://wa.me/${formattedNumber}?text=${encodeURIComponent(defaultMsg)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 bg-[#25D366] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-green-200 hover:scale-[1.02] transition-all active:scale-95"
+                    className="flex items-center gap-3 bg-[#25D366] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-[1.02] transition-all"
                 >
-                    <MessageCircle size={22} fill="white"/>
-                    <span>{isHe ? 'שלח וואטסאפ' : 'WhatsApp Message'}</span>
+                    <MessageCircle size={22} fill="white" />
+                    <span>{isHe ? 'שלח ווטסאפ' : 'WhatsApp Message'}</span>
                 </a>
             </div>
         );
     };
+
     return (
         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4" dir={isHe ? 'rtl' : 'ltr'}>
-            {/* BACK BUTTON */}
             <button
                 onClick={() => {
                     setActiveSubItem(null);
-                    window.scrollTo({top: 0, behavior: 'smooth'});
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="text-blue-600 mb-8 flex items-center gap-2 font-bold group"
+                className="text-blue-600 mb-8 flex items-center gap-2 font-bold"
             >
-                {isHe ? <ChevronRight size={20}/> : <ChevronLeft size={20}/>}
+                {isHe ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                 {uiText.back}
             </button>
 
-            {/* TITLE */}
-            <h1 className="text-4xl font-black mb-6 text-slate-800">
-                {t(activeSubItem.title)}
-            </h1>
+            <h1 className="text-4xl font-black mb-6 text-slate-800">{t(activeSubItem.title)}</h1>
 
-            {/* CONTENT */}
             <p
                 className={`text-xl leading-relaxed text-slate-600 mb-12 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-blue-500`}
-                dangerouslySetInnerHTML={{__html: t(activeSubItem.content)}}
+                dangerouslySetInnerHTML={{ __html: t(activeSubItem.content) }}
             />
 
-            {/* AUTOMATIC WHATSAPP BUTTON */}
-            <WhatsAppButton htmlContent={t(activeSubItem.content)} isHe={isHe} activityTitle={t(activeSubItem.title)}/>
+            <WhatsAppButton htmlContent={t(activeSubItem.content)} isHe={isHe} activityTitle={t(activeSubItem.title)} />
 
-            {/* PDF DOCUMENTS SECTION */}
             {activeSubItem.pdfs?.length > 0 && (
-                <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem] mt-12 shadow-sm">
+                <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem] mt-12">
                     <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-slate-800">
-                        <FileText className="text-blue-600" size={24}/>
+                        <FileText className="text-blue-600" size={24} />
                         {uiText.docsTitle}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {activeSubItem.pdfs.map((pdf, i) => {
-                            const pdfUrl = typeof pdf === 'string' ? pdf : pdf.url;
-                            const pdfName = typeof pdf === 'string' ? `Document ${i + 1}` : (pdf.name || `Document ${i + 1}`);
-
-                            // Track loading state for each specific button
-                            const [isDownloading, setIsDownloading] = useState(false);
-
-                            const handleDownload = async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                try {
-                                    setIsDownloading(true);
-                                    // 1. Fetch the data as a blob
-                                    const response = await fetch(pdfUrl);
-                                    const blob = await response.blob();
-
-                                    // 2. Create a local URL for the blob data
-                                    const url = window.URL.createObjectURL(blob);
-
-                                    // 3. Create a temporary link and trigger it
-                                    const link = document.createElement('a');
-                                    link.href = url;
-                                    link.download = pdfName.endsWith('.pdf') ? pdfName : `${pdfName}.pdf`;
-
-                                    document.body.appendChild(link);
-                                    link.click();
-
-                                    // 4. Cleanup
-                                    document.body.removeChild(link);
-                                    window.URL.revokeObjectURL(url);
-                                } catch (error) {
-                                    console.error("Download failed, opening in new tab instead", error);
-                                    window.open(pdfUrl, '_blank');
-                                } finally {
-                                    setIsDownloading(false);
-                                }
-                            };
-
-                            return (
-                                <div
-                                    key={i}
-                                    className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-md transition-all group/doc"
-                                >
-                                    <div className="flex items-center gap-3 overflow-hidden flex-1 mr-4">
-                                        <div
-                                            className="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-1 rounded shrink-0">PDF
-                                        </div>
-                                        <span className="font-bold text-slate-700 truncate">{pdfName}</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        {/* PREVIEW BUTTON - Always opens in New Tab */}
-                                        <a
-                                            href={pdfUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                                            title="Open in new tab"
-                                        >
-                                            <Eye size={20}/>
-                                        </a>
-
-                                        {/* DOWNLOAD BUTTON - Forces Download */}
-                                        <button
-                                            onClick={handleDownload}
-                                            disabled={isDownloading}
-                                            className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                                                isDownloading
-                                                    ? 'text-slate-300 bg-slate-50'
-                                                    : 'text-slate-400 hover:text-green-600 hover:bg-green-50'
-                                            }`}
-                                            title="Download PDF"
-                                        >
-                                            {isDownloading ? (
-                                                <Loader2 size={20} className="animate-spin"/>
-                                            ) : (
-                                                <Download size={20}/>
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {activeSubItem.pdfs.map((pdf, i) => (
+                            <PDFRow key={i} pdf={pdf} i={i} isHe={isHe} />
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* GALLERY (IMAGES & VIDEOS) */}
-            {allMedia.length > 0 && (
-                <GalleryBanderole media={allMedia} isHe={isHe}/>
-            )}
+            {allMedia.length > 0 && <GalleryBanderole media={allMedia} isHe={isHe} />}
 
-            {/* RELATED LINKS */}
             {linkedItems.length > 0 && (
                 <div className="mt-16 mb-20">
                     <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 px-2">
                         {isHe ? 'קישורים קשורים' : 'Related Links'}
                     </h3>
-                    <div className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x">
+                    <div className="flex gap-4 overflow-x-auto pb-6 snap-x">
                         {linkedItems.map((item) => (
                             <button
                                 key={item.id}
                                 onClick={() => {
                                     setActiveSubItem(item);
-                                    window.scrollTo({top: 0, behavior: 'smooth'});
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
-                                className="relative flex-shrink-0 w-72 h-44 rounded-[2rem] overflow-hidden shadow-lg group snap-start transition-transform hover:scale-[1.02]"
+                                className="relative flex-shrink-0 w-72 h-44 rounded-[2rem] overflow-hidden shadow-lg snap-start transition-transform hover:scale-[1.02]"
                             >
-                                <img
-                                    src={item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa'}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    alt=""
-                                />
-                                <div
-                                    className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"/>
-                                <div
-                                    className={`absolute inset-0 p-6 flex flex-col justify-end text-white ${isHe ? 'text-right' : 'text-left'}`}>
-                                    <h4 className="font-black text-lg leading-tight drop-shadow-md">{t(item.title)}</h4>
-                                    <div
-                                        className="mt-2 flex items-center gap-1 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                                <img src={item.image || (item.images && item.images[0])} className="absolute inset-0 w-full h-full object-cover" alt="" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                                <div className={`absolute inset-0 p-6 flex flex-col justify-end text-white ${isHe ? 'text-right' : 'text-left'}`}>
+                                    <h4 className="font-black text-lg">{t(item.title)}</h4>
+                                    <div className="mt-2 flex items-center gap-1 text-xs font-bold">
                                         {isHe ? 'צפה עכשיו' : 'View Now'}
-                                        {isHe ? <ChevronLeft size={14}/> : <ChevronRight size={14}/>}
+                                        {isHe ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
                                     </div>
                                 </div>
                             </button>
