@@ -6,10 +6,11 @@ import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
 import MenuBackgroundEditor from "@/components/admin/MenuBackgroundEditor";
 
 const MenuSection = ({
-                         menuData, isHe, openItems, toggleAccordion, moveMenu, moveSubMenu,
+                         menuData, isHe, openItems, toggleAccordion, moveMenu,
+                         moveSubMenu, removeSubMenu,
                          updateMenuTitle, updateMenuBg, addMenu, removeMenu,
                          addSubMenu, handleFileUpload, removeFile, setMenuData,
-                         linkItemToSub, unlinkItemFromSub
+                         linkItemToSub, unlinkItemFromSub,
                      }) => {
     const t = (obj) => isHe ? obj?.he || '' : obj?.en || '';
 
