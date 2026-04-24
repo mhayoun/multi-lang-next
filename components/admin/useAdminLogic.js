@@ -154,6 +154,37 @@ export const useAdminLogic = (logic) => {
         }
     };
 
+    // Add a new sub-item to a specific menu
+    const addSubMenu = (menuId) => {
+        setMenuData(prev => prev.map(m => {
+            if (m.id !== menuId) return m;
+            const newSub = {
+                id: `sub-${Date.now()}`,
+                title: {he: '', en: ''},
+                linkedItemIds: []
+            };
+            return {...m, subItems: [...(m.subItems || []), newSub]};
+        }));
+    };
+
+// Remove a sub-item from a specific menu
+    const removeSubMenu = (menuId, subId) => {
+        setMenuData(prev => prev.map(m => {
+            if (m.id !== menuId) return m;
+            return {...m, subItems: m.subItems.filter(s => s.id !== subId)};
+        }));
+    };
+
+// Reorder sub-items
+    const moveSubMenu = (menuId, fromIndex, toIndex) => {
+        setMenuData(prev => prev.map(menu => {
+            if (menu.id !== menuId) return menu;
+            const newSubItems = [...(menu.subItems || [])];
+            const [movedItem] = newSubItems.splice(fromIndex, 1);
+            newSubItems.splice(toIndex, 0, movedItem);
+            return {...menu, subItems: newSubItems};
+        }));
+    };
     return {
         activeTab, setActiveTab,
         openItems, toggleAccordion,
@@ -161,6 +192,9 @@ export const useAdminLogic = (logic) => {
         updateMenuTitle, updateNewsTitle,
         linkItemToNews, unlinkItemFromNews,
         linkItemToSub, unlinkItemFromSub,
-        publishToCloud
+        publishToCloud,
+        addSubMenu,
+        removeSubMenu,
+        moveSubMenu
     };
 };

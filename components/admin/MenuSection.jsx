@@ -3,9 +3,10 @@ import {Plus, Trash2} from 'lucide-react';
 import SubMenuEditor from '@/components/admin/SubMenuEditor';
 import SliderLinker from '@/components/admin/SliderLinker';
 import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
+import MenuBackgroundEditor from "@/components/admin/MenuBackgroundEditor";
 
 const MenuSection = ({
-                         menuData, isHe, openItems, toggleAccordion, moveMenu,
+                         menuData, isHe, openItems, toggleAccordion, moveMenu, moveSubMenu,
                          updateMenuTitle, updateMenuBg, addMenu, removeMenu,
                          addSubMenu, handleFileUpload, removeFile, setMenuData,
                          linkItemToSub, unlinkItemFromSub
@@ -45,60 +46,63 @@ const MenuSection = ({
                         </>
                     }
                 >
-                    <div
-                        className="flex flex-col md:flex-row items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
-                        {/* Section Image / URL */}
-                        <div className="space-y-2">
-    {/* Label traduit */}
-    <label className="font-bold text-slate-400 block text-[10px] uppercase">
-        {isHe ? 'תמונת רקע לכרטיס' : 'Card background image'}
-    </label>
+                    {/* Card background image */}
+                    <MenuBackgroundEditor
+                        menu={menu}
+                        isHe={isHe}
+                        updateMenuBg={updateMenuBg}
+                        onRemoveImage={(id) => {
+                            setMenuData(menuData.map(m => m.id === id ? {...m, bgImage: null} : m));
+                        }}
+                    />
 
-    {/* Input File - Notez qu'on a retiré "multiple" */}
-    <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => updateMenuBg(e, menu.id)}
-        className="text-[10px] w-full file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-    />
 
-    {/* Affichage de la preview si une image existe */}
-    {menu.bgImage && (
-        <div className="flex gap-2 mt-2">
-            <div className="relative w-16 h-10 group">
-                <img
-                    src={menu.bgImage}
-                    className="w-full h-full object-cover rounded border shadow-sm"
-                    alt="background preview"
-                />
-                <button
-                    onClick={() => {
-                        // Logique pour supprimer l'image (remise à null)
-                        setMenuData(menuData.map(m => m.id === menu.id ? { ...m, bgImage: null } : m));
-                    }}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm z-10"
-                >
-                    <Trash2 size={10}/>
-                </button>
-            </div>
-        </div>
-    )}
-</div>
-                    </div>
-
-                    {/* Menu Specific UI: Sub-items */}
+                    {/* Sub-items Section */}
                     <div className={`space-y-4 border-blue-100 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'}`}>
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">{isHe ? 'תתי-תפריט' : 'Sub-items'}</h4>
-                        {menu.subItems.map(sub => (
-                            <div key={sub.id} className="space-y-3">
-                                <SubMenuEditor sub={sub} menuId={menu.id} isHe={isHe}
-                                               handleFileUpload={handleFileUpload} removeFile={removeFile}
-                                               setMenuData={setMenuData} menuData={menuData}/>
-                                <SliderLinker isHe={isHe} menuData={menuData} linkedItemIds={sub.linkedItemIds}
-                                              onLink={(itemId) => linkItemToSub(menu.id, sub.id, itemId)}
-                                              onUnlink={(itemId) => unlinkItemFromSub(menu.id, sub.id, itemId)} t={t}/>
-                            </div>
-                        ))}
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                            {isHe ? 'תת-תפריטים' : 'Sub-items'}
+                        </h4>
+
+                        <div className="space-y-3">
+                            {menu.subItems.map((sub, subIndex) => (
+                                <EditorAccordionItem
+                                    key={sub.id}
+                                    id={sub.id}
+                                    index={subIndex}
+                                    totalItems={menu.subItems.length}
+                                    isOpen={openItems[sub.id]} // Ensure your toggle logic supports sub-ids
+                                    onToggle={toggleAccordion}
+                                    onRemove={() => removeSubMenu(menu.id, sub.id)}
+                                    onMove={(from, to) => moveSubMenu(menu.id, from, to)}
+                                    titleInputs={
+                                        <div className="flex items-center text-sm font-medium text-slate-600">
+                                            <span>{t(sub.title) || (isHe ? 'תת-פריט חדש' : 'New Sub-item')}</span>
+                                        </div>
+                                    }
+                                >
+                                    <div className="space-y-6">
+                                        <SubMenuEditor
+                                            sub={sub}
+                                            menuId={menu.id}
+                                            isHe={isHe}
+                                            handleFileUpload={handleFileUpload}
+                                            removeFile={removeFile}
+                                            setMenuData={setMenuData}
+                                            menuData={menuData}
+                                        />
+
+                                        <SliderLinker
+                                            isHe={isHe}
+                                            menuData={menuData}
+                                            linkedItemIds={sub.linkedItemIds}
+                                            onLink={(itemId) => linkItemToSub(menu.id, sub.id, itemId)}
+                                            onUnlink={(itemId) => unlinkItemFromSub(menu.id, sub.id, itemId)}
+                                            t={t}
+                                        />
+                                    </div>
+                                </EditorAccordionItem>
+                            ))}
+                        </div>
                         <button onClick={() => addSubMenu(menu.id)}
                                 className="text-blue-600 text-xs font-bold hover:underline">+ {isHe ? 'הוסף תת-תפריט' : 'Add Sub-item'}</button>
                     </div>

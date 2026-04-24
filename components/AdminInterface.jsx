@@ -13,7 +13,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
     const {
         activeTab, setActiveTab, openItems, toggleAccordion, updateLogo,
         updateMenuBg, updateMenuTitle, updateNewsTitle, linkItemToNews, unlinkItemFromNews,
-        linkItemToSub, unlinkItemFromSub, publishToCloud
+        linkItemToSub, unlinkItemFromSub, publishToCloud, moveSubMenu, removeSubMenu
     } = useAdminLogic(logic);
 
     const {
@@ -63,7 +63,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
 
                 {/* Added Messages Section */}
                 {activeTab === 'messages' && (
-                    <MessagesSection isHe={isHe} />
+                    <MessagesSection isHe={isHe}/>
                 )}
 
                 {activeTab === 'menu' && (
@@ -78,6 +78,8 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
                         addMenu={addMenu}
                         removeMenu={removeMenu}
                         addSubMenu={addSubMenu}
+                        removeSubMenu={removeSubMenu}
+                        moveSubMenu={moveSubMenu}
                         handleFileUpload={handleFileUpload}
                         removeFile={removeFile}
                         setMenuData={setMenuData}

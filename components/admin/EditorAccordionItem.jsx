@@ -12,10 +12,6 @@ const EditorAccordionItem = ({
     onMove,
     icon: Icon,
     titleInputs,
-    isHe,
-    itemData, // On utilise un nom générique pour l'objet (news ou menu)
-    onFileUpload,
-    onUpdateField
 }) => (
     <div className="bg-white border rounded-2xl overflow-hidden shadow-sm hover:border-slate-300 transition-colors">
         {/* Header */}
