@@ -10,7 +10,7 @@ const MenuSection = ({
                          moveSubMenu, removeSubMenu,
                          updateMenuTitle, updateMenuBg, addMenu, removeMenu,
                          addSubMenu, handleFileUpload, removeFile, setMenuData,
-                         linkItemToSub, unlinkItemFromSub,
+                         linkItemToSub, unlinkItemFromSub, publishToCloud
                      }) => {
     const t = (obj) => isHe ? obj?.he || '' : obj?.en || '';
 
@@ -76,7 +76,7 @@ const MenuSection = ({
                                     onRemove={() => removeSubMenu(menu.id, sub.id)}
                                     onMove={(from, to) => moveSubMenu(menu.id, from, to)}
                                     titleInputs={
-                                        <div className="flex items-center text-sm font-medium text-slate-600">
+                                        <div className="flex items-center font-bold focus:ring-0 text-sm text-slate-600">
                                             <span>{t(sub.title) || (isHe ? 'תת-פריט חדש' : 'New Sub-item')}</span>
                                         </div>
                                     }
@@ -90,6 +90,7 @@ const MenuSection = ({
                                             removeFile={removeFile}
                                             setMenuData={setMenuData}
                                             menuData={menuData}
+                                            publishToCloud={publishToCloud}
                                         />
 
                                         <SliderLinker

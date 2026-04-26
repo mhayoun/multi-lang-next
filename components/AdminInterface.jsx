@@ -85,6 +85,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
                         setMenuData={setMenuData}
                         linkItemToSub={linkItemToSub}
                         unlinkItemFromSub={unlinkItemFromSub}
+                        publishToCloud={publishToCloud}
                     />
                 )}
 

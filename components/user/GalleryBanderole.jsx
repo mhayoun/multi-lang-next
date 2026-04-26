@@ -9,94 +9,91 @@ const GalleryBanderole = ({ media, isHe }) => {
 
     const hasMultipleItems = items.length > 1;
 
-    // Logic for Lightbox navigation (swapped based on language)
     const nextItem = (e) => {
         e?.stopPropagation();
-        if (isHe) {
-            setSelectedIndex((prev) => (prev - 1 + items.length) % items.length);
-        } else {
-            setSelectedIndex((prev) => (prev + 1) % items.length);
-        }
+        setSelectedIndex((prev) => (isHe ? (prev - 1 + items.length) % items.length : (prev + 1) % items.length));
     };
 
     const prevItem = (e) => {
         e?.stopPropagation();
-        if (isHe) {
-            setSelectedIndex((prev) => (prev + 1) % items.length);
-        } else {
-            setSelectedIndex((prev) => (prev - 1 + items.length) % items.length);
-        }
+        setSelectedIndex((prev) => (isHe ? (prev + 1) % items.length : (prev - 1 + items.length) % items.length));
     };
 
     const scroll = (direction) => {
         const container = document.getElementById('gallery-banderole-container');
-        // In RTL, we invert the scroll distance
         const distance = isHe ? 400 : -400;
         const scrollAmount = direction === 'left' ? distance : -distance;
         container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     };
 
-    return (
-        /* 1. Dynamic Direction on wrapper */
-        <div className="mb-12 relative group/gallery" dir={isHe ? 'rtl' : 'ltr'}>
-            <h3 className={`text-sm font-black uppercase tracking-widest text-slate-400 mb-4 px-2 ${isHe ? 'text-right' : 'text-left'}`}>
-                {isHe ? 'גלריית מדיה' : 'Media Gallery'}
-            </h3>
-
-            <div className="relative">
-                {hasMultipleItems && (
-                    <>
-                        <button
-                            onClick={() => scroll('left')}
-                            className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'right-2' : 'left-2'}`}
-                        >
-                            <ChevronLeft size={20} />
-                        </button>
-                        <button
-                            onClick={() => scroll('right')}
-                            className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'left-2' : 'right-2'}`}
-                        >
-                            <ChevronRight size={20} />
-                        </button>
-                    </>
-                )}
-
-                <div
-                    id="gallery-banderole-container"
-                    className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x scroll-smooth"
-                >
-                    {items.map((item, i) => (
-                        <div
-                            key={i}
-                            onClick={() => setSelectedIndex(i)}
-                            className="relative flex-shrink-0 w-80 h-52 rounded-[2rem] overflow-hidden shadow-lg cursor-pointer group snap-start border border-slate-100 bg-slate-900"
-                        >
-                            {item.type === 'video' ? (
-                                <div className="w-full h-full relative">
-                                    <video
-                                        src={item.url}
-                                        className="absolute inset-0 w-full h-full object-cover opacity-60"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <PlayCircle size={48} className="text-white/80 group-hover:scale-110 transition-transform" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <img
-                                    src={item.url}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    alt=""
-                                />
-                            )}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 flex items-center justify-center">
-                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full scale-50 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
-                                    <Maximize2 className="text-white" size={24} />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+    // Helper to render media content
+    const renderMedia = (item, isSingle = false) => (
+        <div
+            onClick={() => setSelectedIndex(0)}
+            className={`relative overflow-hidden shadow-lg cursor-pointer group border border-slate-100 bg-slate-900 
+                ${isSingle ? 'w-full h-64 md:h-96 rounded-[2.5rem]' : 'w-80 h-52 rounded-[2rem] flex-shrink-0 snap-start'}`}
+        >
+            {item.type === 'video' ? (
+                <div className="w-full h-full relative">
+                    <video src={item.url} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <PlayCircle size={isSingle ? 64 : 48} className="text-white/80 group-hover:scale-110 transition-transform" />
+                    </div>
+                </div>
+            ) : (
+                <img
+                    src={item.url}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt=""
+                />
+            )}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500 flex items-center justify-center">
+                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full scale-50 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
+                    <Maximize2 className="text-white" size={isSingle ? 32 : 24} />
                 </div>
             </div>
+        </div>
+    );
+
+    return (
+        <div className="mb-12 relative group/gallery" dir={isHe ? 'rtl' : 'ltr'}>
+            {/*<h3 className={`text-sm font-black uppercase tracking-widest text-slate-400 mb-4 px-2 ${isHe ? 'text-right' : 'text-left'}`}>
+                {isHe ? 'גלריית מדיה' : 'Media Gallery'}
+            </h3>*/}
+
+            {!hasMultipleItems ? (
+                /* SINGLE ITEM VIEW */
+                <div className="px-2">
+                    {renderMedia(items[0], true)}
+                </div>
+            ) : (
+                /* MULTIPLE ITEMS GALLERY */
+                <div className="relative">
+                    <button
+                        onClick={() => scroll('left')}
+                        className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'right-2' : 'left-2'}`}
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <button
+                        onClick={() => scroll('right')}
+                        className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'left-2' : 'right-2'}`}
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+
+                    <div
+                        id="gallery-banderole-container"
+                        className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x scroll-smooth px-2"
+                    >
+                        {items.map((item, i) => (
+                            <React.Fragment key={i}>
+                                {renderMedia(item, false)}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* --- LIGHTBOX OVERLAY --- */}
             {selectedIndex !== null && (
@@ -116,8 +113,6 @@ const GalleryBanderole = ({ media, isHe }) => {
                         </button>
                     </div>
 
-                    {/* Lightbox Controls - Order is automatically handled by the dir={isHe ? 'rtl' : 'ltr'} on the outer div,
-                        but for the fixed overlay we define positions explicitly or use the same logic */}
                     {hasMultipleItems && (
                         <>
                             <button

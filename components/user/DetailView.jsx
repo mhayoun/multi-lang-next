@@ -85,33 +85,7 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
         ...(activeSubItem.images || []).map(url => ({url, type: 'image'}))
     ];
 
-    const WhatsAppButton = ({htmlContent, isHe, activityTitle}) => {
-        const plainText = htmlContent.replace(/<[^>]*>?/gm, '');
-        const mobileRegex = /05\d[- ]?\d{7}/g;
-        const matches = plainText.match(mobileRegex);
-        if (!matches || matches.length === 0) return null;
 
-        const firstMatch = matches[0];
-        const rawNumber = firstMatch.replace(/\D/g, '');
-        const formattedNumber = `972${rawNumber.substring(1)}`;
-        const defaultMsg = isHe
-            ? `שלום, אני מעוניין בפרטים אודות "${activityTitle}". אשמח שתחזרו אלי.`
-            : `Hi, I am interested in "${activityTitle}". Please contact me.`;
-
-        return (
-            <div className="mb-12 flex justify-start w-full">
-                <a
-                    href={`https://wa.me/${formattedNumber}?text=${encodeURIComponent(defaultMsg)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 bg-[#25D366] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-[1.02] transition-all"
-                >
-                    <MessageCircle size={22} fill="white"/>
-                    <span>{isHe ? 'שלח ווטסאפ' : 'WhatsApp Message'}</span>
-                </a>
-            </div>
-        );
-    };
 
     return (
         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4" dir={isHe ? 'rtl' : 'ltr'}>
