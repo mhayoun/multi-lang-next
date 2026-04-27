@@ -1,14 +1,31 @@
 import React, { useState } from 'react';
 import { Clock, MapPin, Mail, Phone, Bus, Send, CheckCircle } from 'lucide-react';
 
-const Footer = ({ data, isHe = true }) => {
+const Footer = ({ data, isHe = true, menuData = [], setActiveSubItem }) => {
     const [status, setStatus] = useState('idle'); // idle, sending, success
-    // Added missing state to capture input values
     const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
 
     if (!data) return null;
 
     const { hours, contact, form, bottomBar } = data;
+
+    // --- HELPER: Find and Navigate to Linked Menu Item ---
+    const handleFooterLinkClick = (linkedId) => {
+        if (!linkedId || !setActiveSubItem) return;
+
+        // Flatten menuData to find the sub-item with matching ID
+        let targetItem = null;
+        menuData.forEach(category => {
+            const found = category.subItems.find(sub => String(sub.id) === String(linkedId));
+            if (found) targetItem = found;
+        });
+
+        if (targetItem) {
+            setActiveSubItem(targetItem);
+            // Scroll to top so the user sees the new content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,7 +48,7 @@ const Footer = ({ data, isHe = true }) => {
         } catch (err) {
             console.error("Footer send error:", err);
             setStatus('idle');
-            alert(isHe ? "תקלה בשליחה, נסה שוב" : "Error sending, try again");
+            alert(isHe ? "שגיאה בשליחה, נסה שנית" : "Error sending, try again");
         }
     };
 
@@ -41,7 +58,7 @@ const Footer = ({ data, isHe = true }) => {
         <footer id="footer" className="bg-slate-950 text-white pt-16 pb-6 px-4 mt-20" dir={isHe ? "rtl" : "ltr"}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
 
-                {/* Section 1: Working Hours */}
+                {/* Section 1: Working Hours & Links */}
                 <div className="space-y-6">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -55,9 +72,19 @@ const Footer = ({ data, isHe = true }) => {
                                 <span className="block font-bold text-slate-200">
                                     {isHe ? item.label.he : item.label.en}
                                 </span>
-                                <span className={item.isLink ? "text-blue-400 cursor-pointer hover:underline" : ""}>
-                                    {isHe ? item.value.he : item.value.en}
-                                </span>
+
+                                {item.isLink ? (
+                                    <span
+                                        onClick={() => handleFooterLinkClick(item.linkedSubItemId)}
+                                        className="text-blue-400 cursor-pointer hover:underline hover:text-blue-300 transition-colors inline-block mt-1"
+                                    >
+                                        {isHe ? item.value.he : item.value.en}
+                                    </span>
+                                ) : (
+                                    <span className="inline-block mt-1">
+                                        {isHe ? item.value.he : item.value.en}
+                                    </span>
+                                )}
                             </div>
                         ))}
                     </div>

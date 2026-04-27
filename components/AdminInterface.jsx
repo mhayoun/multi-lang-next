@@ -36,6 +36,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
         };
         downloadJSON(menuData, 'DEFAULT_MENU.json');
         downloadJSON(newsData, 'DEFAULT_NEWS.json');
+        downloadJSON(newsData, 'DEFAULT_FOOTER.json');
     };
 
     return (

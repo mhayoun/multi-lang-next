@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FileText, ChevronRight, ChevronLeft, Download, Eye, Loader2 } from 'lucide-react';
 import GalleryBanderole from './GalleryBanderole.jsx';
 
-// 1. EXTRACTED COMPONENT: This handles its own state legally
+// 1. EXTRACTED COMPONENT: Handles its own state for downloads
 const PDFRow = ({ pdf, i, isHe }) => {
     const [isDownloading, setIsDownloading] = useState(false);
 
@@ -54,8 +54,7 @@ const PDFRow = ({ pdf, i, isHe }) => {
                 <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className={`p-2 rounded-lg transition-colors cursor-pointer ${isDownloading ? 'text-slate-300 bg-slate-50' : 'text-slate-400 hover:text-green-600 hover:bg-green-50'
-                        }`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${isDownloading ? 'text-slate-300 bg-slate-50' : 'text-slate-400 hover:text-green-600 hover:bg-green-50'}`}
                 >
                     {isDownloading ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
                 </button>
@@ -66,44 +65,51 @@ const PDFRow = ({ pdf, i, isHe }) => {
 
 const DetailView = ({ activeSubItem, setActiveSubItem, menuData, t, isHe, uiText }) => {
 
-    // Logic to inject WhatsApp buttons directly into the HTML string
     const getProcessedContent = (htmlContent, title) => {
-        const mobileRegex = /05\d[- ]?\d{7}/g;
+    if (!htmlContent) return '';
 
-        return htmlContent.replace(mobileRegex, (match) => {
-            const rawNumber = match.replace(/\D/g, '');
-            const formattedNumber = `972${rawNumber.substring(1)}`;
-            const defaultMsg = isHe
-                ? `שלום, אני מעוניין בפרטים אודות "${title}". אשמח שתחזרו אלי.`
-                : `Hi, I am interested in "${title}". Please contact me.`;
+    // This regex looks for Israeli mobile numbers
+    const mobileRegex = /05\d[- ]?\d{7}/g;
 
-            // Returning an inline-styled button that works inside dangerouslySetInnerHTML
-            return `
-                <span style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
-                    ${match}
-                    <a 
-                        href="https://wa.me/${formattedNumber}?text=${encodeURIComponent(defaultMsg)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style="
-                            background-color: #25D366;
-                            color: white;
-                            text-decoration: none;
-                            padding: 2px 8px;
-                            border-radius: 12px;
-                            font-size: 12px;
-                            font-weight: bold;
-                            display: inline-flex;
-                            align-items: center;
-                            margin: 0 4px;
-                        "
-                    >
-                        WhatsApp
-                    </a>
-                </span>
-            `;
-        });
-    };
+    return htmlContent.replace(mobileRegex, (match, offset, fullString) => {
+        // 1. SAFETY CHECK: Look back at the characters before the match.
+        // If the number is part of an attribute (like href="tel:050...") we skip it.
+        const context = fullString.substring(Math.max(0, offset - 10), offset);
+        if (context.includes('tel:') || context.includes('wa.me') || context.includes('href=')) {
+            return match; // Return the number as-is without adding a button
+        }
+
+        const rawNumber = match.replace(/\D/g, '');
+        const formattedNumber = `972${rawNumber.substring(1)}`;
+
+        const defaultMsg = isHe
+            ? `שלום, אני מעוניין בפרטים אודות "${title}". אשמח שתחזרו אלי.`
+            : `Hi, I am interested in "${title}". Please contact me.`;
+
+        const waUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(defaultMsg)}`;
+
+        // 2. Return the number + the button only for plain text instances
+        return `${match} <a href="${waUrl}" target="_blank" rel="noopener noreferrer" 
+            style="
+                background-color: #25D366; 
+                color: white !important; 
+                text-decoration: none !important; 
+                padding: 2px 10px; 
+                border-radius: 50px; 
+                font-size: 12px; 
+                font-weight: bold; 
+                display: inline-flex; 
+                align-items: center; 
+                margin: 0 4px;
+                line-height: 1.2;
+                vertical-align: middle;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+            <span style="margin-left: 4px;">WhatsApp</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="white" style="display:inline-block"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.438 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.438-9.89 9.886-.001 2.15.613 3.734 1.658 5.439l-1.11 4.057 4.232-1.11z"/></svg>
+            </a>`;
+    });
+};
 
     const getLinkedItemsData = (ids) => {
         if (!ids || !Array.isArray(ids)) return [];
@@ -179,10 +185,9 @@ const DetailView = ({ activeSubItem, setActiveSubItem, menuData, t, isHe, uiText
                                 className="relative flex-shrink-0 w-72 h-44 rounded-[2rem] overflow-hidden shadow-lg snap-start transition-transform hover:scale-[1.02]"
                             >
                                 <img src={item.image || (item.images && item.images[0])}
-                                    className="absolute inset-0 w-full h-full object-cover" alt="" />
+                                     className="absolute inset-0 w-full h-full object-cover" alt="" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                <div
-                                    className={`absolute inset-0 p-6 flex flex-col justify-end text-white ${isHe ? 'text-right' : 'text-left'}`}>
+                                <div className={`absolute inset-0 p-6 flex flex-col justify-end text-white ${isHe ? 'text-right' : 'text-left'}`}>
                                     <h4 className="font-black text-lg">{t(item.title)}</h4>
                                     <div className="mt-2 flex items-center gap-1 text-xs font-bold">
                                         {isHe ? 'צפה עכשיו' : 'View Now'}

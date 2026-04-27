@@ -31,14 +31,14 @@ const AdminTabs = ({activeTab, setActiveTab, isHe, publishToCloud}) => {
                 ))}
             </nav>
 
-            {/* Action Button moved here */}
-            <button
-                onClick={publishToCloud}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-[2rem] font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95"
-            >
-                <CloudUpload size={20}/>
-                <span>{isHe ? 'פרסם שינויים' : 'Publish Changes'}</span>
-            </button>
+            {/*/!* Action Button moved here *!/*/}
+            {/*<button*/}
+            {/*    onClick={publishToCloud}*/}
+            {/*    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-[2rem] font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95"*/}
+            {/*>*/}
+            {/*    <CloudUpload size={20}/>*/}
+            {/*    <span>{isHe ? 'פרסם שינויים' : 'Publish Changes'}</span>*/}
+            {/*</button>*/}
         </div>
     );
 };

@@ -393,7 +393,7 @@ const SubMenuEditor = ({
                         <div className="p-4 border-t bg-slate-50 flex justify-end">
                             <button
                                 onClick={() => {
-                                    publishToCloud();              // First, save to the cloud
+                                    //publishToCloud();              // First, save to the cloud
                                     logic.setIsModalOpen(false);   // Then, close the modal
                                 }}
                                 className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition"

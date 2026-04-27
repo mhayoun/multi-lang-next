@@ -40,7 +40,12 @@ export default function Home() {
 
       {/* 5. Footer only shows for Users, or stays at bottom for both */}
       {logic.view !== 'admin' && (
-        <Footer data={DEFAULT_FOOTER} isHe={isHe} />
+        <Footer
+          data={logic.footerData || DEFAULT_FOOTER}
+          isHe={isHe}
+          menuData={logic.menuData}           // <--- ADD THIS
+          setActiveSubItem={logic.setActiveSubItem} // <--- ADD THIS
+        />
       )}
     </div>
   );
