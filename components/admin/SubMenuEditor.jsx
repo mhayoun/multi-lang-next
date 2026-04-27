@@ -401,7 +401,7 @@ const SubMenuEditor = ({
                                 className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition"
                             >
                                 <CheckCircle2 size={18}/>
-                                {isHe ? 'שמור ופרסם שינויים' : 'Save & Publish Changes'}
+                                {isHe ? 'סגור' : 'Close'}
                             </button>
                         </div>
                     </div>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Plus, Newspaper, Trash2 } from 'lucide-react';
+import { Plus, Newspaper, Trash2, Link2, FileText } from 'lucide-react';
 import SubMenuEditor from '@/components/admin/SubMenuEditor';
 import SliderLinker from '@/components/admin/SliderLinker';
+import SliderLinkerOnce from '@/components/admin/SliderLinkerOnce';
 import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
 
 const NewsSection = ({
@@ -10,7 +11,7 @@ const NewsSection = ({
     removeNews, addNews, handleFileUpload, removeFile, setNewsData, moveNews
 }) => {
 
-    // Met à jour un champ spécifique (ex: bgImage_mob)
+    // Update a specific field for a news item (e.g. contentMode, bgImage)
     const updateNewsField = (id, field, value) => {
         setNewsData(prev => prev.map(n => n.id === id ? { ...n, [field]: value } : n));
     };
@@ -39,7 +40,6 @@ const NewsSection = ({
                         icon={Newspaper}
                         isHe={isHe}
                         itemData={news}
-                        // Important: on passe le 5ème argument 'true' pour indiquer que c'est du NewsData
                         onFileUpload={(e, id, type) => handleFileUpload(e, id, null, type, true)}
                         titleInputs={
                             <>
@@ -54,15 +54,28 @@ const NewsSection = ({
                             </>
                         }
                     >
-                        {/* --- CONTENU DE LA NEWS --- */}
                         <div className="space-y-6">
+                            {/* --- NEW FEATURE: CONTENT MODE TOGGLE --- */}
+                            <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
+                                <button
+                                    onClick={() => updateNewsField(news.id, 'contentMode', 'editor')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition ${(!news.contentMode || news.contentMode === 'editor') ? 'bg-white text-blue-600 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <FileText size={14} /> {isHe ? 'עורך תוכן' : 'Content Editor'}
+                                </button>
+                                <button
+                                    onClick={() => updateNewsField(news.id, 'contentMode', 'linker')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition ${news.contentMode === 'linker' ? 'bg-white text-blue-600 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <Link2 size={14} /> {isHe ? 'קישור לפריט קיים' : 'Link Existing Item'}
+                                </button>
+                            </div>
 
-                            {/* SECTION IMAGES DE FOND (DANS L'ACCORDION) */}
+                            {/* SECTION IMAGES DE FOND */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                {/* MOBILE */}
                                 <div className="space-y-2">
                                     <label className="font-bold text-slate-400 block text-[10px] uppercase">
-                                        {isHe ? 'תמונת רקע מובייל' : 'Mobile Background Image'}
+                                        {isHe ? 'תמונת רקע לנייד' : 'Mobile Background Image'}
                                     </label>
                                     <input
                                         type="file"
@@ -83,10 +96,9 @@ const NewsSection = ({
                                     )}
                                 </div>
 
-                                {/* WEB */}
                                 <div className="space-y-2">
                                     <label className="font-bold text-slate-400 block text-[10px] uppercase">
-                                        {isHe ? 'תמונת רקע סליידר (Web)' : 'Web Background Image (Slider)'}
+                                        {isHe ? 'תמונת רקע לדסקטופ' : 'Web Background Image (Slider)'}
                                     </label>
                                     <input
                                         type="file"
@@ -108,17 +120,38 @@ const NewsSection = ({
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">{isHe ? 'תוכן הדף' : 'Page Content'}</h4>
-                                <SubMenuEditor sub={news} menuId={news.id} isHe={isHe}
-                                    handleFileUpload={(e, tid, sid, type) => handleFileUpload(e, tid, sid, type, true)}
-                                    removeFile={(tid, sid, type, idx) => removeFile(tid, sid, type, idx, true)}
-                                    setMenuData={setNewsData} menuData={newsData} />
-                            </div>
+                            {/* --- CONDITIONAL RENDER --- */}
+                            {(!news.contentMode || news.contentMode === 'editor') ? (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">{isHe ? 'תוכן הדף' : 'Page Content'}</h4>
+                                    <SubMenuEditor sub={news} menuId={news.id} isHe={isHe}
+                                        handleFileUpload={(e, tid, sid, type) => handleFileUpload(e, tid, sid, type, true)}
+                                        removeFile={(tid, sid, type, idx) => removeFile(tid, sid, type, idx, true)}
+                                        setMenuData={setNewsData} menuData={newsData} />
 
-                            <SliderLinker isHe={isHe} menuData={menuData} linkedItemIds={news.linkedItemIds}
-                                onLink={(itemId) => linkItemToNews(news.id, itemId)}
-                                onUnlink={(itemId) => unlinkItemFromNews(news.id, itemId)} t={t} />
+                                    {/* Keep SliderLinker available for Editor mode if you want 'Related Links' */}
+                                    <div className="pt-4 border-t mt-6">
+                                        <SliderLinker
+                                            isHe={isHe}
+                                            menuData={menuData}
+                                            linkedItemIds={news.linkedItemIds || []}
+                                            onLink={(itemId) => linkItemToNews(news.id, itemId)}
+                                            onUnlink={(itemId) => unlinkItemFromNews(news.id, itemId)}
+                                            t={t}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <SliderLinkerOnce
+                                    isHe={isHe}
+                                    menuData={menuData}
+                                    selectedId={news.linkedItemId}
+                                    onSelect={(val) => updateNewsField(news.id, 'linkedItemId', val)}
+                                />
+                            )}
+
+                            {/* We keep SliderLinker visible or accessible if you need "Featured Links" even with custom content,
+                                but per your request, the toggle logic above handles the primary section behavior. */}
                         </div>
                     </EditorAccordionItem>
                 ))}

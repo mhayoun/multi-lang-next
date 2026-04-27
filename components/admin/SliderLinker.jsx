@@ -53,4 +53,6 @@ const SliderLinker = ({
   );
 };
 
+
+
 export default SliderLinker;

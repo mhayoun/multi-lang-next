@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSession } from "next-auth/react";
+import {useSession} from "next-auth/react";
 import DetailView from '@/components/user/DetailView';
 import HomeNewsSlider from '@/components/user/HomeNewsSlider';
 import CardGrid from '@/components/user/CardGrid';
@@ -22,7 +22,7 @@ const UserInterface = ({logic, uiText}) => {
                         {isHe ? '← חזרה' : '← Back'}
                     </button>
 
-                    <ContactForm isHe={isHe} isFooter={false} />
+                    <ContactForm isHe={isHe} isFooter={false}/>
                 </div>
             );
         }
@@ -40,10 +40,29 @@ const UserInterface = ({logic, uiText}) => {
         );
     }
 
+    // Define the click handler using the 'logic' object provided by your state manager
+    const handleSubItemClick = (sub) => {
+        if (!sub) return;
+
+        // 1. Set the active content
+        logic.setActiveSubItem(sub);
+
+        // 2. Ensure we are in user view
+        logic.setView('user');
+
+        // 3. Smooth scroll to top so the user sees the new content
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+
     return (
         <div className="space-y-12" dir={isHe ? 'rtl' : 'ltr'}>
             <HomeNewsSlider
                 newsData={newsData}
+                menuData={menuData}
+                handleSubItemClick={handleSubItemClick}
                 setActiveSubItem={setActiveSubItem}
                 t={t}
                 isHe={isHe}
