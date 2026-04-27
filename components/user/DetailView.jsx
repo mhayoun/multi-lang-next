@@ -120,6 +120,7 @@ const DetailView = ({ activeSubItem, setActiveSubItem, menuData, t, isHe, uiText
     const linkedItems = getLinkedItemsData(activeSubItem.linkedItemIds);
     const allMedia = [
         ...(activeSubItem.videos || []).map(url => ({ url, type: 'video' })),
+        ...(activeSubItem.youtubes || []).map(url => ({ url, type: 'youtube' })),
         ...(activeSubItem.images || []).map(url => ({ url, type: 'image' }))
     ];
 

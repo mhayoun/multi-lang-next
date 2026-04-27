@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {
-    Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2,
+    Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2, Link,
     GripVertical, Copy, Check, Video, ExternalLink, Sparkles, Loader2, RotateCcw
 } from 'lucide-react';
 import {useSubMenuEditor} from '@/components/admin/useSubMenuEditor';
@@ -168,7 +168,7 @@ const SubMenuEditor = ({
             </div>
 
             {/* 4. FILE UPLOADS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-200">
                 <div className="space-y-2">
                     <label
                         className="font-bold text-slate-400 block text-[10px] uppercase">{isHe ? 'תמונות' : 'Images'}</label>
@@ -231,6 +231,58 @@ const SubMenuEditor = ({
                                 <button onClick={() => removeFile(menuId, sub.id, 'videos', i)}
                                         className="absolute top-0 right-0 bg-red-500 text-white p-0.5 opacity-0 group-hover:opacity-100 transition z-10">
                                     <Trash2 size={10}/>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 4. YOUTUBE LINKS (NEW SECTION) */}
+                <div className="space-y-2">
+                    <label className="font-bold text-slate-400 block text-[10px] uppercase tracking-widest">
+                        {isHe ? 'קישורי יוטיוב' : 'YouTube Links'}
+                    </label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder={isHe ? "הדבק קישור ולחץ Enter..." : "Paste link and Enter..."}
+                            className="text-[10px] w-full border rounded-md p-2 pl-7 outline-none focus:border-blue-400"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.target.value) {
+                                    e.preventDefault();
+                                    const val = e.target.value;
+                                    const currentYoutubes = sub.youtubes || [];
+
+                                    // DEBUG LOGS
+                                    console.log("Adding Link:", val);
+                                    console.log("Current Sub Object:", sub);
+
+                                    logic.updateSubMenu(menuId, sub.id, {
+                                        youtubes: [...currentYoutubes, val]
+                                    });
+                                    e.target.value = '';
+                                }
+                            }}
+                        />
+                        <Link size={12} className="absolute left-2 top-2.5 text-slate-400"/>
+                    </div>
+
+                    <div className="space-y-1 mt-2">
+                        {sub.youtubes?.map((link, i) => (
+                            <div key={i}
+                                 className="flex items-center justify-between bg-red-50 border border-red-100 rounded p-1 text-[10px] shadow-sm">
+                    <span className="truncate w-24 flex items-center gap-1 text-red-700">
+                        <Video size={10} className="text-red-600"/>
+                        {link}
+                    </span>
+                                <button
+                                    onClick={() => {
+                                        const filtered = sub.youtubes.filter((_, idx) => idx !== i);
+                                        logic.updateSubMenu(menuId, sub.id, {youtubes: filtered});
+                                    }}
+                                    className="text-red-400 hover:text-red-700 transition"
+                                >
+                                    <Trash2 size={12}/>
                                 </button>
                             </div>
                         ))}
