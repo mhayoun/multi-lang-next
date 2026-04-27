@@ -2,6 +2,14 @@ import React from 'react';
 import { ChevronLeft } from 'lucide-react';
 
 const CardGrid = ({ menuData, setActiveSubItem, t, isHe }) => {
+  const handleItemClick = (sub) => {
+    setActiveSubItem(sub);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // Use 'auto' for instant jump, 'smooth' for animation
+    });
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {menuData.map((menu) => (
@@ -27,7 +35,7 @@ const CardGrid = ({ menuData, setActiveSubItem, t, isHe }) => {
             {menu.subItems.map((sub) => (
               <button
                 key={sub.id}
-                onClick={() => setActiveSubItem(sub)}
+                onClick={() => handleItemClick(sub)}
                 className="w-full text-right px-5 py-3 rounded-2xl bg-slate-50 hover:bg-blue-600 hover:text-white transition-all flex justify-between items-center group font-bold text-slate-700"
               >
                 {t(sub.title)}
