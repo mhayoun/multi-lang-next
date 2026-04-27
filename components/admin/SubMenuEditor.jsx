@@ -4,7 +4,6 @@ import {
     GripVertical, Copy, Check, Video, ExternalLink, Sparkles, Loader2, RotateCcw
 } from 'lucide-react';
 import {useSubMenuEditor} from '@/components/admin/useSubMenuEditor';
-import process from "next/dist/build/webpack/loaders/resolve-url-loader/lib/postcss";
 
 const SubMenuEditor = ({
                            sub,
@@ -42,7 +41,10 @@ const SubMenuEditor = ({
         setIsGenerating(true);
 
         try {
-            const GROQ_KEY = process.env.GROQ_KEY;
+            const GROQ_KEY = process.env.NEXT_PUBLIC_GROQ_KEY;
+            if (!GROQ_KEY) {
+                throw new Error("API Key is missing. Check your .env.local and restart the server.");
+            }
             const URL = "https://api.groq.com/openai/v1/chat/completions";
 
             const response = await fetch(URL, {
