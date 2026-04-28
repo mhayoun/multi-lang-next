@@ -2,7 +2,7 @@
 
 import { put, list } from '@vercel/blob';
 
-export const createPdfHtml = async (formData, buttonText = 'Download PDF') => {
+export const subMenuEditor_NewPdfHtml = async (formData, buttonText = 'Download PDF') => {
     const file = formData.get('file');
     if (!file) throw new Error("No file provided");
 

@@ -1,188 +1,40 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2, Link,
-    GripVertical, Copy, Check, Video, ExternalLink, Sparkles, Loader2, RotateCcw,
-    Upload, Image as ImageIcon
+    GripVertical, Copy, Check, Video, ExternalLink, Sparkles, RotateCcw, Upload
 } from 'lucide-react';
-import {useSubMenuEditor} from '@/components/admin/useSubMenuEditor';
-import {createImageHtml} from '@/components/admin/createImageHtml';
-import {createPdfHtml} from '@/components/admin/createPdfHtml';
 
-const SubMenuEditor = ({
-                           sub,
-                           menuId,
-                           isHe,
-                           handleFileUpload,
-                           removeFile,
-                           setMenuData,
-                           menuData
-                       }) => {
+import { useSubMenuEditor } from '@/components/admin/SubMenuEditor_Logic';
+import { subMenuEditor_NewSrcHtml } from '@/components/admin/SubMenuEditor_NewSrcHtml';
+import { subMenuEditor_NewPdfHtml } from '@/components/admin/SubMenuEditor_NewPdfHtml';
+
+// New Refactored imports
+import { useSubMenuActions } from './SubMenuEditor_Actions';
+import { SectionLabel, ActionButton } from './SubMenuEditor_Components';
+
+const SubMenuEditor = ({ sub, menuId, isHe, handleFileUpload, removeFile, setMenuData, menuData }) => {
     const logic = useSubMenuEditor(sub, menuId, setMenuData, menuData);
-    const [isGenerating, setIsGenerating] = React.useState(false);
-    const [backupContent, setBackupContent] = useState(null);
+    const actions = useSubMenuActions(logic, isHe, sub);
 
-    // New states for the Image-to-HTML helper
-    const [isUploadingImage, setIsUploadingImage] = useState(false);
-    const [imageGenSuccess, setImageGenSuccess] = useState(false);
     const fileInputRef = useRef(null);
     const pdfInputRef = useRef(null);
 
-    // AI Instruction Helper
     const getAutoInstruction = (lang) => lang === 'he'
-        ? "צור קוד HTML נקי עבור תוכן זה (ללא תגיות html, head או body). שמור על כל הנתונים המקוריים והוסף בולטים (נקודות), צבעים ואייקונים."
-        : "Generate clean HTML code for this content (excluding html, head, or body tags). Preserve all original data and include bullet points, colors, and icons.";
+        ? "צור קוד HTML נקי עבור תוכן זה (ללא תגיות html, head או body). שמור על רשימות וצבעים."
+        : "Generate clean HTML code for this content (excluding html, head, or body tags). Preserve bullet points and colors.";
 
     const [customRequest, setCustomRequest] = useState(getAutoInstruction(logic.modalLang));
 
-    // Update the textarea content automatically when the language changes
     useEffect(() => {
         setCustomRequest(getAutoInstruction(logic.modalLang));
     }, [logic.modalLang]);
 
-    // Function to handle the Image Upload -> HTML Generation -> Clipboard
-    const handleImageToHTML = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setIsUploadingImage(true);
-
-        try {
-            // Prepare FormData for the Server Action
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const alt = sub.title?.[logic.modalLang] || 'image';
-
-            // Call the Server Action
-            const result = await createImageHtml(formData, alt);
-
-            if (result.html) {
-                await navigator.clipboard.writeText(result.html);
-                console.info("✅ HTML Copied from Server result");
-                setImageGenSuccess(true);
-                setTimeout(() => setImageGenSuccess(false), 3000);
-            }
-        } catch (error) {
-            console.error("Client error calling Server Action:", error);
-            alert(isHe ? "שגיאה בשרת" : "Server Error");
-        } finally {
-            setIsUploadingImage(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-    };
-
-    const handlePdfToHTML = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Optional: Ask user for button text
-        const customText = prompt(isHe ? "הכנס טקסט לכפתור:" : "Enter button text:", "Download PDF");
-        if (customText === null) return; // User cancelled
-
-        setIsUploadingImage(true); // Re-using the same loading state
-
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const result = await createPdfHtml(formData, customText);
-
-            if (result.html) {
-                await navigator.clipboard.writeText(result.html);
-                console.info("✅ PDF Download Button copied to clipboard");
-                setImageGenSuccess(true);
-                setTimeout(() => setImageGenSuccess(false), 3000);
-            }
-        } catch (error) {
-            console.error("PDF Handler Error:", error);
-            alert(isHe ? "שגיאה בהעלאת ה-PDF" : "Error uploading PDF");
-        } finally {
-            setIsUploadingImage(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-    };
-
-    const handleAIGenerate = async () => {
-        if (isGenerating) return;
-
-        const currentText = sub.content?.[logic.modalLang] || '';
-        if (!currentText.trim()) return;
-
-        setBackupContent(currentText);
-        setIsGenerating(true);
-
-        try {
-            const GROQ_KEY = process.env.NEXT_PUBLIC_GROQ_KEY;
-            if (!GROQ_KEY) {
-                throw new Error("API Key is missing. Check your .env.local and restart the server.");
-            }
-            const URL = "https://api.groq.com/openai/v1/chat/completions";
-
-            const response = await fetch(URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${GROQ_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [
-                        {
-                            role: "system",
-                            content: "You are an HTML expert. Return ONLY the requested HTML body content without ``` tags or <html>/<body> tags."
-                        },
-                        {
-                            role: "user",
-                            content: `Task: ${customRequest}\n\nContent: ${currentText}`
-                        }
-                    ]
-                })
-            });
-
-            const data = await response.json();
-            const rawHtml = data.choices?.[0]?.message?.content;
-
-            if (rawHtml) {
-                const cleanHtml = rawHtml
-                    .replace(/```html|```/g, '')
-                    .replace(/<\/?(html|head|body)[^>]*>/gi, '')
-                    .trim();
-
-                logic.handleUpdateField('content', logic.modalLang, cleanHtml);
-            }
-        } catch (error) {
-            console.error("AI Error:", error);
-            alert(isHe ? "שגיאה בחיבור ל-AI." : "AI Connection Error.");
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    /**
-     * RESTORE LOGIC
-     * This function takes the saved text from our backup buffer
-     * and puts it back into the main content editor.
-     */
-    const handleRestore = () => {
-        // 1. Check if we actually have a backup saved
-        if (backupContent !== null) {
-
-            // 2. Use the existing logic function to update the field
-            // We pass 'content', the current language (HE/EN), and the backed-up text
-            logic.handleUpdateField('content', logic.modalLang, backupContent);
-
-            // 3. Clear the backup buffer after restoring
-            // This hides the Restore button until the next AI generation
-            setBackupContent(null);
-        }
-    };
-
     return (
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4 text-slate-800 shadow-sm relative">
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4 shadow-sm relative">
 
-            {/* 1. HEADER */}
+            {/* 1. HEADER & TOGGLE */}
             <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                <span className="text-xs font-bold uppercase text-slate-400">
                     {isHe ? 'ניהול תוכן' : 'Content Management'}
                 </span>
                 <button
@@ -194,32 +46,26 @@ const SubMenuEditor = ({
                 </button>
             </div>
 
-            {/* 2. TITLE INPUTS */}
+            {/* 2. TITLE GRID */}
             <div className="grid grid-cols-2 gap-4">
-                <input
-                    className={`border p-2 rounded text-right font-medium ${isHe ? 'order-1' : 'order-2'}`}
-                    dir="rtl" value={sub.title?.he || ''} placeholder="כותרת..."
-                    onChange={(e) => logic.handleUpdateField('title', 'he', e.target.value)}
-                />
-                <input
-                    className={`border p-2 rounded text-left font-medium ${isHe ? 'order-2' : 'order-1'}`}
-                    dir="ltr" value={sub.title?.en || ''} placeholder="Title..."
-                    onChange={(e) => logic.handleUpdateField('title', 'en', e.target.value)}
-                />
+                {['he', 'en'].map(lang => (
+                    <input
+                        key={lang}
+                        dir={lang === 'he' ? 'rtl' : 'ltr'}
+                        className={`border p-2 rounded font-medium ${isHe ? (lang === 'he' ? 'order-1' : 'order-2') : (lang === 'en' ? 'order-1' : 'order-2')}`}
+                        value={sub.title?.[lang] || ''}
+                        placeholder={lang === 'he' ? 'כותרת...' : 'Title...'}
+                        onChange={(e) => logic.handleUpdateField('title', lang, e.target.value)}
+                    />
+                ))}
             </div>
 
-            {/* 3. QUICK CONTENT AREA */}
+            {/* 3. CONTENT AREA */}
             <div className="grid grid-cols-2 gap-4">
                 {['he', 'en'].map((lang) => (
-                    <div key={lang}
-                         className={`relative group ${isHe ? (lang === 'he' ? 'order-1' : 'order-2') : (lang === 'en' ? 'order-1' : 'order-2')}`}>
-                        <button
-                            onClick={() => {
-                                logic.setModalLang(lang);
-                                logic.setIsModalOpen(true);
-                            }}
-                            className="absolute top-2 right-2 p-1 bg-white/80 rounded border opacity-0 group-hover:opacity-100 transition z-10 hover:bg-blue-50"
-                        >
+                    <div key={lang} className={`relative group ${isHe ? (lang === 'he' ? 'order-1' : 'order-2') : (lang === 'en' ? 'order-1' : 'order-2')}`}>
+                        <button onClick={() => { logic.setModalLang(lang); logic.setIsModalOpen(true); }}
+                                className="absolute top-2 right-2 p-1 bg-white/80 rounded border opacity-0 group-hover:opacity-100 transition z-10">
                             <Maximize2 size={14}/>
                         </button>
                         {logic.viewMode === 'edit' ? (
@@ -227,315 +73,163 @@ const SubMenuEditor = ({
                                 className="w-full border p-2 rounded h-32 font-mono text-xs bg-slate-900 text-green-400"
                                 value={sub.content?.[lang] || ''}
                                 onChange={(e) => logic.handleUpdateField('content', lang, e.target.value)}
-                                dir="ltr"
                             />
                         ) : (
-                            <div
-                                className={`w-full border p-2 rounded h-32 overflow-y-auto bg-white text-xs ${lang === 'he' ? 'text-right' : 'text-left'}`}
-                                dangerouslySetInnerHTML={{__html: sub.content?.[lang] || ''}}
-                                dir={lang === 'he' ? 'rtl' : 'ltr'}
-                            />
+                            <div className={`w-full border p-2 rounded h-32 overflow-y-auto bg-white text-xs ${lang === 'he' ? 'text-right' : 'text-left'}`}
+                                 dangerouslySetInnerHTML={{__html: sub.content?.[lang] || ''}} dir={lang === 'he' ? 'rtl' : 'ltr'} />
                         )}
                     </div>
                 ))}
             </div>
 
-            {/* 4. FILE UPLOADS */}
+            {/* 4. MEDIA MANAGEMENT */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-200">
+                {/* Images */}
                 <div className="space-y-2">
-                    <label
-                        className="font-bold text-slate-400 block text-[10px] uppercase">{isHe ? 'תמונות' : 'Images'}</label>
-                    <input type="file" multiple accept="image/*"
-                           onChange={(e) => handleFileUpload(e, menuId, sub.id, 'images')}
-                           className="text-[10px] w-full"/>
-                    <div className="flex gap-2 flex-wrap mt-2">
+                    <SectionLabel>{isHe ? 'תמונות' : 'Images'}</SectionLabel>
+                    <input type="file" multiple accept="image/*" onChange={(e) => handleFileUpload(e, menuId, sub.id, 'images')} className="text-[10px] w-full"/>
+                    <div className="flex gap-2 flex-wrap">
                         {sub.images?.map((img, i) => (
-                            <div key={i} className="relative w-12 h-12 group">
-                                <img src={img} className="w-full h-full object-cover rounded border shadow-sm"
-                                     alt="preview"/>
-                                <button onClick={() => removeFile(menuId, sub.id, 'images', i)}
-                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm z-10">
-                                    <Trash2 size={10}/>
-                                </button>
+                            <div key={i} className="relative w-10 h-10 group">
+                                <img src={img} className="w-full h-full object-cover rounded border" alt="p"/>
+                                <button onClick={() => removeFile(menuId, sub.id, 'images', i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition"><Trash2 size={10}/></button>
                             </div>
                         ))}
                     </div>
                 </div>
 
+                {/* PDFs */}
                 <div className="space-y-2">
-                    <label
-                        className="font-bold text-slate-400 block text-[10px] uppercase tracking-widest">{isHe ? 'קבצי PDF' : 'PDFs'}</label>
-                    <input type="file" multiple accept=".pdf"
-                           onChange={(e) => handleFileUpload(e, menuId, sub.id, 'pdfs')}
-                           className="text-[10px] w-full"/>
-                    <div className="space-y-1 mt-2">
-                        {sub.pdfs?.map((pdf, i) => (
-                            <div key={i}
-                                 className="flex items-center justify-between bg-white border rounded p-1 text-[10px] shadow-sm">
-                                <span className="truncate w-24 flex items-center gap-1">
-                                    <FileText size={10} className="text-red-500"/>
-                                    {typeof pdf === 'string' ? pdf.split('/').pop() : (pdf.name || 'Doc')}
-                                </span>
-                                <button onClick={() => removeFile(menuId, sub.id, 'pdfs', i)}
-                                        className="text-red-500 hover:text-red-700 transition">
-                                    <Trash2 size={12}/>
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                    <SectionLabel>{isHe ? 'קובצי PDF' : 'PDFs'}</SectionLabel>
+                    <input type="file" multiple accept=".pdf" onChange={(e) => handleFileUpload(e, menuId, sub.id, 'pdfs')} className="text-[10px] w-full"/>
+                    {sub.pdfs?.map((pdf, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white border rounded p-1 text-[10px]">
+                            <span className="truncate flex items-center gap-1"><FileText size={10} className="text-red-500"/>{typeof pdf === 'string' ? pdf.split('/').pop() : pdf.name}</span>
+                            <button onClick={() => removeFile(menuId, sub.id, 'pdfs', i)} className="text-red-500 hover:text-red-700 transition"><Trash2 size={12}/></button>
+                        </div>
+                    ))}
                 </div>
 
+                {/* Videos */}
                 <div className="space-y-2">
-                    <label
-                        className="font-bold text-slate-400 block text-[10px] uppercase tracking-widest">{isHe ? 'סרטונים' : 'Videos'}</label>
-                    <input type="file" multiple accept="video/*"
-                           onChange={(e) => handleFileUpload(e, menuId, sub.id, 'videos')}
-                           className="text-[10px] w-full"/>
-                    <div className="flex gap-2 flex-wrap mt-2">
+                    <SectionLabel>{isHe ? 'סרטונים' : 'Videos'}</SectionLabel>
+                    <input type="file" multiple accept="video/*" onChange={(e) => handleFileUpload(e, menuId, sub.id, 'videos')} className="text-[10px] w-full"/>
+                    <div className="flex gap-2 flex-wrap">
                         {sub.videos?.map((vid, i) => (
-                            <div key={i}
-                                 className="relative w-12 h-12 group bg-black rounded border overflow-hidden shadow-sm">
-                                <video src={vid} className="w-full h-full object-cover" muted
-                                       onMouseOver={e => e.target.play()} onMouseOut={e => e.target.pause()}/>
-                                <div
-                                    className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
-                                    <Video size={14} className="text-white"/>
-                                </div>
-                                <button onClick={() => removeFile(menuId, sub.id, 'videos', i)}
-                                        className="absolute top-0 right-0 bg-red-500 text-white p-0.5 opacity-0 group-hover:opacity-100 transition z-10">
-                                    <Trash2 size={10}/>
-                                </button>
+                            <div key={i} className="relative w-10 h-10 group bg-black rounded border overflow-hidden">
+                                <video src={vid} className="w-full h-full object-cover" muted onMouseOver={e => e.target.play()} onMouseOut={e => e.target.pause()}/>
+                                <button onClick={() => removeFile(menuId, sub.id, 'videos', i)} className="absolute top-0 right-0 bg-red-500 text-white p-0.5 opacity-0 group-hover:opacity-100 transition"><Trash2 size={10}/></button>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* 4. YOUTUBE LINKS (NEW SECTION) */}
+                {/* YouTube */}
                 <div className="space-y-2">
-                    <label className="font-bold text-slate-400 block text-[10px] uppercase tracking-widest">
-                        {isHe ? 'קישורי יוטיוב' : 'YouTube Links'}
-                    </label>
+                    <SectionLabel>{isHe ? 'יוטיוב' : 'YouTube'}</SectionLabel>
                     <div className="relative">
-                        <input
-                            type="text"
-                            placeholder={isHe ? "הדבק קישור ולחץ Enter..." : "Paste link and Enter..."}
-                            className="text-[10px] w-full border rounded-md p-2 pl-7 outline-none focus:border-blue-400"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && e.target.value) {
-                                    e.preventDefault();
-                                    const val = e.target.value;
-                                    const currentYoutubes = sub.youtubes || [];
-
-                                    // DEBUG LOGS
-                                    console.log("Adding Link:", val);
-                                    console.log("Current Sub Object:", sub);
-
-                                    logic.updateSubMenu(menuId, sub.id, {
-                                        youtubes: [...currentYoutubes, val]
-                                    });
-                                    e.target.value = '';
-                                }
-                            }}
-                        />
+                        <input type="text" placeholder={isHe ? "הדבק לינק..." : "Paste link..."} className="text-[10px] w-full border rounded p-2 pl-7 outline-none"
+                               onKeyDown={(e) => {
+                                   if (e.key === 'Enter' && e.target.value) {
+                                       logic.updateSubMenu(menuId, sub.id, { youtubes: [...(sub.youtubes || []), e.target.value] });
+                                       e.target.value = '';
+                                   }
+                               }} />
                         <Link size={12} className="absolute left-2 top-2.5 text-slate-400"/>
                     </div>
-
-                    <div className="space-y-1 mt-2">
-                        {sub.youtubes?.map((link, i) => (
-                            <div key={i}
-                                 className="flex items-center justify-between bg-red-50 border border-red-100 rounded p-1 text-[10px] shadow-sm">
-                    <span className="truncate w-24 flex items-center gap-1 text-red-700">
-                        <Video size={10} className="text-red-600"/>
-                        {link}
-                    </span>
-                                <button
-                                    onClick={() => {
-                                        const filtered = sub.youtubes.filter((_, idx) => idx !== i);
-                                        logic.updateSubMenu(menuId, sub.id, {youtubes: filtered});
-                                    }}
-                                    className="text-red-400 hover:text-red-700 transition"
-                                >
-                                    <Trash2 size={12}/>
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                    {sub.youtubes?.map((link, i) => (
+                        <div key={i} className="flex items-center justify-between bg-red-50 border border-red-100 rounded p-1 text-[10px]">
+                            <span className="truncate flex items-center gap-1 text-red-700"><Video size={10}/>{link}</span>
+                            <button onClick={() => logic.updateSubMenu(menuId, sub.id, { youtubes: sub.youtubes.filter((_, idx) => idx !== i) })} className="text-red-400"><Trash2 size={12}/></button>
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            {/* 6. MODAL (Rich Editor) */}
+            {/* 5. FULLSCREEN MODAL */}
             {logic.isModalOpen && (
-                <div
-                    className="fixed inset-0 z-[9999] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[9999] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
                     <div className="bg-white w-full h-full rounded-2xl shadow-2xl flex flex-col overflow-hidden">
 
-                        {/* MODAL HEADER - STRETCHED AI BOX */}
+                        {/* MODAL HEADER */}
                         <div className="p-4 border-b flex justify-between items-center bg-slate-50">
-                            <div className="flex-1 flex items-center gap-3 w-full min-w-0">
-
-                                {/* Lang Toggle */}
+                            <div className="flex-1 flex items-center gap-3 min-w-0">
                                 <div className="flex shrink-0 bg-slate-200 p-1 rounded-lg">
-                                    <button onClick={() => logic.setModalLang('he')}
-                                            className={`px-3 py-1 rounded-md text-xs font-bold transition ${logic.modalLang === 'he' ? 'bg-white text-blue-600 shadow' : 'text-slate-500'}`}>HE
-                                    </button>
-                                    <button onClick={() => logic.setModalLang('en')}
-                                            className={`px-3 py-1 rounded-md text-xs font-bold transition ${logic.modalLang === 'en' ? 'bg-white text-blue-600 shadow' : 'text-slate-500'}`}>EN
-                                    </button>
+                                    {['he', 'en'].map(l => (
+                                        <button key={l} onClick={() => logic.setModalLang(l)}
+                                                className={`px-3 py-1 rounded-md text-xs font-bold transition ${logic.modalLang === l ? 'bg-white text-blue-600 shadow' : 'text-slate-500'}`}>{l.toUpperCase()}</button>
+                                    ))}
                                 </div>
 
-                                {/* Tools */}
-                                <button onClick={logic.handleCopy}
-                                        className={`shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border ${logic.copied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                                    {logic.copied ? <Check size={12}/> : <Copy size={12}/>}
-                                    {isHe ? (logic.copied ? 'הועתק!' : 'העתק תוכן') : (logic.copied ? 'Copied!' : 'Copy Content')}
-                                </button>
-
-                                <a href="[https://bestonlinehtmleditor.com/](https://bestonlinehtmleditor.com/)"
-                                   target="_blank" rel="noopener noreferrer"
-                                   className="shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100">
-                                    <ExternalLink size={12}/>
-                                    {isHe ? 'עורך HTML' : 'HTML Editor'}
+                                <ActionButton onClick={logic.handleCopy} icon={logic.copied ? Check : Copy} label={isHe ? (logic.copied ? 'הועתק!' : 'העתק תוכן') : (logic.copied ? 'Copied!' : 'Copy Content')} />
+                                <a href="https://bestonlinehtmleditor.com/" target="_blank" rel="noopener noreferrer" className="shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100">
+                                    <ExternalLink size={12}/> {isHe ? 'עורך HTML' : 'HTML Editor'}
                                 </a>
 
-                                {/* AI */}
-                                <div
-                                    className="flex-1 flex items-center gap-2 bg-white p-1 rounded-md border border-slate-200 shadow-sm min-w-0">
-                                    <button
-                                        onClick={handleAIGenerate}
-                                        disabled={isGenerating}
-                                        className={`shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border shadow-sm ${
-                                            isGenerating ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 border-transparent'
-                                        }`}
-                                    >
-                                        {isGenerating ? <Loader2 size={12} className="animate-spin"/> :
-                                            <Sparkles size={12}/>}
-                                        {isHe ? (isGenerating ? '...' : 'עריכת AI') : (isGenerating ? '...' : 'Generate AI')}
-                                    </button>
-                                    {/* RESTORE BUTTON - ONLY SHOWS IF BACKUP EXISTS */}
-                                    {backupContent !== null && (
-                                        <button
-                                            onClick={handleRestore}
-                                            title="Restore previous version"
-                                            className="shrink-0 flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-md font-bold transition border border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                                        >
-                                            <RotateCcw size={12}/>
-                                            {isHe ? 'שחזר' : 'Undo AI'}
+                                {/* AI TOOLBOX */}
+                                <div className="flex-1 flex items-center gap-2 bg-white p-1 rounded-md border border-slate-200 shadow-sm min-w-0">
+                                    <ActionButton
+                                        variant="ai"
+                                        onClick={() => actions.handleAIGenerate(customRequest)}
+                                        loading={actions.isGenerating}
+                                        icon={Sparkles}
+                                        label={isHe ? (actions.isGenerating ? '...' : 'הפק AI') : (actions.isGenerating ? '...' : 'Generate AI')}
+                                    />
+                                    {actions.backupContent && (
+                                        <button onClick={actions.handleRestore} className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-md font-bold border border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100">
+                                            <RotateCcw size={12}/> {isHe ? 'בטל' : 'Undo'}
                                         </button>
                                     )}
-                                    <textarea
-                                        value={customRequest}
-                                        onChange={(e) => setCustomRequest(e.target.value)}
-                                        dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}
-                                        placeholder={isHe ? "הנחיות ל-AI..." : "AI instructions..."}
-                                        className="h-10 flex-1 w-full text-sm p-2 bg-slate-50 border-none resize-none focus:ring-0 outline-none overflow-hidden"
-                                        rows={1}
-                                    />
+                                    <textarea value={customRequest} onChange={(e) => setCustomRequest(e.target.value)} dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}
+                                              className="h-10 flex-1 text-sm p-2 bg-slate-50 border-none resize-none outline-none overflow-hidden" rows={1} />
                                 </div>
                             </div>
-
-                            <button onClick={() => logic.setIsModalOpen(false)}
-                                    className="ml-4 p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full transition shrink-0">
-                                <X size={24}/>
-                            </button>
+                            <button onClick={() => logic.setIsModalOpen(false)} className="ml-4 p-2 text-slate-400 hover:text-red-500 transition"><X size={24}/></button>
                         </div>
 
-                        {/* SPLIT EDITOR */}
+                        {/* SPLIT SCREEN EDITOR */}
                         <div className="flex-1 flex overflow-hidden relative">
-                            <div style={{width: `${logic.leftWidth}%`}}
-                                 className="flex flex-col bg-slate-900 border-r border-slate-700">
-                                <textarea
-                                    className="flex-1 w-full p-6 font-mono text-base bg-slate-900 text-green-400 outline-none resize-none"
-                                    value={sub.content?.[logic.modalLang] || ''}
-                                    onChange={(e) => logic.handleUpdateField('content', logic.modalLang, e.target.value)}
-                                    dir="ltr"
-                                />
+                            <div style={{width: `${logic.leftWidth}%`}} className="flex flex-col bg-slate-900 border-r border-slate-700">
+                                <textarea className="flex-1 w-full p-6 font-mono text-base bg-slate-900 text-green-400 outline-none resize-none"
+                                          value={sub.content?.[logic.modalLang] || ''} onChange={(e) => logic.handleUpdateField('content', logic.modalLang, e.target.value)} dir="ltr" />
                             </div>
-                            <div onMouseDown={logic.startResizing}
-                                 className="w-1.5 h-full bg-slate-300 hover:bg-blue-500 cursor-col-resize flex items-center justify-center transition-colors group">
-                                <div className="bg-white border rounded-full p-1 shadow-sm">
-                                    <GripVertical size={12} className="text-slate-400"/>
-                                </div>
+                            <div onMouseDown={logic.startResizing} className="w-1.5 h-full bg-slate-300 hover:bg-blue-500 cursor-col-resize flex items-center justify-center transition-colors">
+                                <div className="bg-white border rounded-full p-1 shadow-sm"><GripVertical size={12} className="text-slate-400"/></div>
                             </div>
                             <div style={{width: `${100 - logic.leftWidth}%`}} className="flex flex-col bg-slate-50">
-                                <div className="flex-1 overflow-y-auto p-10 bg-white m-4 rounded-xl shadow-inner"
-                                     dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}
-                                     dangerouslySetInnerHTML={{__html: sub.content?.[logic.modalLang] || ''}}/>
+                                <div className={`flex-1 overflow-y-auto p-10 bg-white m-4 rounded-xl shadow-inner ${logic.modalLang === 'he' ? 'text-right' : 'text-left'}`}
+                                     dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'} dangerouslySetInnerHTML={{__html: sub.content?.[logic.modalLang] || ''}}/>
                             </div>
                         </div>
 
+                        {/* MODAL FOOTER ACTIONS */}
                         <div className="p-4 border-t bg-slate-50 flex justify-between items-center">
-    {/* Bottom Left Helpers */}
-    <div className="flex items-center gap-2">
-        {/* Image Helper */}
-        <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleImageToHTML}
-        />
-        <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploadingImage}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition border shadow-sm ${
-                imageGenSuccess
-                    ? 'bg-green-500 text-white border-transparent'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
-            }`}
-        >
-            {isUploadingImage ? (
-                <Loader2 size={14} className="animate-spin" />
-            ) : imageGenSuccess ? (
-                <Check size={14} />
-            ) : (
-                <Upload size={14} />
-            )}
-            {imageGenSuccess
-                ? (isHe ? 'הקוד הועתק!' : 'HTML Copied!')
-                : (isHe ? 'העלה תמונה (HTML)' : 'Upload Image for HTML')}
-        </button>
+                            <div className="flex items-center gap-2">
+                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => actions.processFileToHtml(e.target.files[0], subMenuEditor_NewSrcHtml, sub.title?.[logic.modalLang] || 'image')} />
+                                <ActionButton
+                                    onClick={() => fileInputRef.current?.click()}
+                                    loading={actions.isProcessingFile}
+                                    success={actions.statusMsg === 'success'}
+                                    icon={Upload}
+                                    label={isHe ? 'תמונה ל-HTML' : 'Image to HTML'}
+                                />
 
-        {/* PDF Helper */}
-        <input
-            type="file"
-            ref={pdfInputRef}
-            onChange={handlePdfToHTML}
-            accept=".pdf"
-            className="hidden"
-        />
-        <button
-            type="button"
-            onClick={() => pdfInputRef.current?.click()}
-            disabled={isUploadingImage}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition border shadow-sm ${
-                imageGenSuccess
-                    ? 'bg-green-500 text-white border-transparent'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
-            }`}
-        >
-            {isUploadingImage ? (
-                <Loader2 size={14} className="animate-spin" />
-            ) : imageGenSuccess ? (
-                <Check size={14} />
-            ) : (
-                <FileText size={14} />
-            )}
-            {imageGenSuccess
-                ? (isHe ? 'כפתור PDF הועתק!' : 'PDF Button Copied!')
-                : (isHe ? 'העלה PDF (כפתור)' : 'Upload PDF for Button')}
-        </button>
-    </div>
-
-    {/* Close Button */}
-    <button
-        onClick={() => logic.setIsModalOpen(false)}
-        className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-sm"
-    >
-        <CheckCircle2 size={18} />
-        {isHe ? 'סגור' : 'Close'}
-    </button>
-</div>
+                                <input type="file" ref={pdfInputRef} className="hidden" accept=".pdf" onChange={(e) => {
+                                    const text = prompt(isHe ? "טקסט לכפתור:" : "Button text:", "Download PDF");
+                                    if(text) actions.processFileToHtml(e.target.files[0], subMenuEditor_NewPdfHtml, text);
+                                }} />
+                                <ActionButton
+                                    onClick={() => pdfInputRef.current?.click()}
+                                    loading={actions.isProcessingFile}
+                                    success={actions.statusMsg === 'success'}
+                                    icon={FileText}
+                                    label={isHe ? 'PDF לכפתור' : 'PDF to Button'}
+                                />
+                            </div>
+                            <button onClick={() => logic.setIsModalOpen(false)} className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-sm">
+                                <CheckCircle2 size={18} /> {isHe ? 'סיום' : 'Close'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

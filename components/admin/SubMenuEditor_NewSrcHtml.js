@@ -9,7 +9,7 @@ import { put, list } from '@vercel/blob';
  * 3. Uploads if necessary
  * 4. Returns the data to the client
  */
-export const createImageHtml = async (formData, altText = 'image') => {
+export const subMenuEditor_NewSrcHtml = async (formData, altText = 'image') => {
     // Extract file from FormData on the server
     const file = formData.get('file');
 
