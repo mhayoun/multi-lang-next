@@ -56,7 +56,8 @@ const Navbar = ({logic, uiText}) => {
                         className="flex items-center transition-all active:scale-95 outline-none hover:brightness-110"
                     >
                         {logic.logo ? (
-                            <img src={logic.logo} alt="Logo" className="h-8 md:h-9 w-auto object-contain"/>
+                            <img src={logic.logo} alt="Logo"
+                                 className="h-14 md:h-20 w-auto object-contain"/>
                         ) : (
                             <h1 className="font-black text-sm md:text-base tracking-tighter text-slate-800 uppercase group">
                                 Dynamic<span className="text-blue-600 group-hover:text-blue-700">Port</span>
@@ -65,7 +66,7 @@ const Navbar = ({logic, uiText}) => {
                     </button>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex gap-1 h-8 items-center ml-2">
+                    <div className="hidden md:flex gap-1 h-14 items-center ml-2">
                         {logic.menuData.map((menu) => {
                             const hasSubItems = menu.subItems && menu.subItems.length > 0;
                             const isSingleItem = menu.subItems && menu.subItems.length === 1;
