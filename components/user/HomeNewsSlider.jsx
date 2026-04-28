@@ -4,7 +4,7 @@ import {ChevronRight, ChevronLeft} from 'lucide-react';
 const HomeNewsSlider = ({
                             newsData,
                             menuData,
-                            handleSubItemClick, 
+                            handleSubItemClick,
                             setActiveSubItem,
                             t,
                             isHe
@@ -55,7 +55,6 @@ const HomeNewsSlider = ({
                     alt="news"
                 />
 
-                {/* Ombre très subtile uniquement en bas pour la lisibilité du texte */}
                 {/* Ombre très subtile uniquement en bas pour la lisibilité du texte */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"/>
 

@@ -14,14 +14,33 @@ const Navbar = ({logic, uiText}) => {
     };
 
     const handleSubItemClick = (sub) => {
-        logic.setActiveSubItem(sub);
+        // CHECK: Is this sub-item a "Linker" to another item?
+        if (sub.contentMode === 'linker' && sub.linkedItemId) {
+            // Search through all menus and sub-items to find the "Target"
+            const targetSubItem = logic.menuData
+                ?.flatMap(menu => menu.subItems || [])
+                .find(item => String(item.id) === String(sub.linkedItemId));
+
+            if (targetSubItem) {
+                // If found, redirect the navigation to the TARGET instead of the clicked item
+                logic.setActiveSubItem(targetSubItem);
+                console.log(`Redirecting from ${sub.id} to linked item ${targetSubItem.id}`);
+            } else {
+                // Fallback: if target not found, just open the clicked item
+                logic.setActiveSubItem(sub);
+            }
+        } else {
+            // DEFAULT: Normal editor mode
+            logic.setActiveSubItem(sub);
+        }
+
         logic.setView('user');
         setIsMenuOpen(false);
 
         // Jump to the top of the page
         window.scrollTo({
             top: 0,
-            behavior: 'smooth' // Change to 'instant' if you want no animation
+            behavior: 'smooth'
         });
     };
 
@@ -71,7 +90,6 @@ const Navbar = ({logic, uiText}) => {
                                                 if (footer) {
                                                     footer.scrollIntoView({behavior: 'smooth'});
                                                 }
-                                                //handleSubItemClick(menu); // Treat the menu item itself as the active item
                                             } else if (isSingleItem) {
                                                 handleSubItemClick(menu.subItems[0]);
                                             }

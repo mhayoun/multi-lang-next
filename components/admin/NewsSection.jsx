@@ -55,7 +55,7 @@ const NewsSection = ({
                         }
                     >
                         <div className="space-y-6">
-                            {/* --- NEW FEATURE: CONTENT MODE TOGGLE --- */}
+                            {/* --- CONTENT MODE TOGGLE --- */}
                             <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
                                 <button
                                     onClick={() => updateNewsField(news.id, 'contentMode', 'editor')}

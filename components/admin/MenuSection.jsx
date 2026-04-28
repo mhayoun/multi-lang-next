@@ -1,7 +1,8 @@
 import React from 'react';
-import {Plus, Trash2} from 'lucide-react';
+import {Plus, Trash2, FileText, Link2} from 'lucide-react'; // Added icons
 import SubMenuEditor from '@/components/admin/SubMenuEditor';
 import SliderLinker from '@/components/admin/SliderLinker';
+import SliderLinkerOnce from '@/components/admin/SliderLinkerOnce'; // Added import
 import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
 import MenuBackgroundEditor from "@/components/admin/MenuBackgroundEditor";
 
@@ -13,6 +14,20 @@ const MenuSection = ({
                          linkItemToSub, unlinkItemFromSub, publishToCloud
                      }) => {
     const t = (obj) => isHe ? obj?.he || '' : obj?.en || '';
+
+    // Helper to update specific fields within a sub-item
+    const updateSubMenuField = (menuId, subId, field, value) => {
+        console.log("Updating:", { menuId, subId, field, value }); // Check your console!
+        setMenuData(prev => prev.map(m => {
+            if (m.id === menuId) {
+                return {
+                    ...m,
+                    subItems: m.subItems.map(s => s.id === subId ? { ...s, [field]: value } : s)
+                };
+            }
+            return m;
+        }));
+    };
 
     return (
         <section className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -76,31 +91,63 @@ const MenuSection = ({
                                     onRemove={() => removeSubMenu(menu.id, sub.id)}
                                     onMove={(from, to) => moveSubMenu(menu.id, from, to)}
                                     titleInputs={
-                                        <div className="flex items-center font-bold focus:ring-0 text-sm text-slate-600">
+                                        <div
+                                            className="flex items-center font-bold focus:ring-0 text-sm text-slate-600">
                                             <span>{t(sub.title) || (isHe ? 'תת-פריט חדש' : 'New Sub-item')}</span>
                                         </div>
                                     }
                                 >
                                     <div className="space-y-6">
-                                        <SubMenuEditor
-                                            sub={sub}
-                                            menuId={menu.id}
-                                            isHe={isHe}
-                                            handleFileUpload={handleFileUpload}
-                                            removeFile={removeFile}
-                                            setMenuData={setMenuData}
-                                            menuData={menuData}
-                                            publishToCloud={publishToCloud}
-                                        />
+                                        {/* --- NEW FEATURE: CONTENT MODE TOGGLE --- */}
+                                        <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
+                                            <button
+                                                onClick={() => updateSubMenuField(menu.id, sub.id, 'contentMode', 'editor')}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition ${(!sub.contentMode || sub.contentMode === 'editor') ? 'bg-white text-blue-600 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                <FileText size={14}/> {isHe ? 'עורך תוכן' : 'Content Editor'}
+                                            </button>
+                                            <button
+                                                onClick={() => updateSubMenuField(menu.id, sub.id, 'contentMode', 'linker')}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition ${sub.contentMode === 'linker' ? 'bg-white text-blue-600 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                <Link2 size={14}/> {isHe ? 'קישור לפריט קיים' : 'Link Existing Item'}
+                                            </button>
+                                        </div>
 
-                                        <SliderLinker
-                                            isHe={isHe}
-                                            menuData={menuData}
-                                            linkedItemIds={sub.linkedItemIds}
-                                            onLink={(itemId) => linkItemToSub(menu.id, sub.id, itemId)}
-                                            onUnlink={(itemId) => unlinkItemFromSub(menu.id, sub.id, itemId)}
-                                            t={t}
-                                        />
+                                        {/* --- NEW FEATURE: CONDITIONAL RENDER --- */}
+                                        {(!sub.contentMode || sub.contentMode === 'editor') ? (
+                                            <div
+                                                className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <SubMenuEditor
+                                                    sub={sub}
+                                                    menuId={menu.id}
+                                                    isHe={isHe}
+                                                    handleFileUpload={handleFileUpload}
+                                                    removeFile={removeFile}
+                                                    setMenuData={setMenuData}
+                                                    menuData={menuData}
+                                                    publishToCloud={publishToCloud}
+                                                />
+
+                                                <SliderLinker
+                                                    isHe={isHe}
+                                                    menuData={menuData}
+                                                    linkedItemIds={sub.linkedItemIds || []}
+                                                    onLink={(itemId) => linkItemToSub(menu.id, sub.id, itemId)}
+                                                    onUnlink={(itemId) => unlinkItemFromSub(menu.id, sub.id, itemId)}
+                                                    t={t}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <SliderLinkerOnce
+                                                    isHe={isHe}
+                                                    menuData={menuData}
+                                                    selectedId={sub.linkedItemId}
+                                                    onSelect={(val) => updateSubMenuField(menu.id, sub.id, 'linkedItemId', val)}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </EditorAccordionItem>
                             ))}
