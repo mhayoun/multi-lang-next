@@ -1,9 +1,12 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2, Link,
-    GripVertical, Copy, Check, Video, ExternalLink, Sparkles, Loader2, RotateCcw
+    GripVertical, Copy, Check, Video, ExternalLink, Sparkles, Loader2, RotateCcw,
+    Upload, Image as ImageIcon
 } from 'lucide-react';
 import {useSubMenuEditor} from '@/components/admin/useSubMenuEditor';
+import {createImageHtml} from '@/components/admin/createImageHtml';
+import {createPdfHtml} from '@/components/admin/createPdfHtml';
 
 const SubMenuEditor = ({
                            sub,
@@ -12,12 +15,17 @@ const SubMenuEditor = ({
                            handleFileUpload,
                            removeFile,
                            setMenuData,
-                           menuData,
-                           publishToCloud
+                           menuData
                        }) => {
     const logic = useSubMenuEditor(sub, menuId, setMenuData, menuData);
     const [isGenerating, setIsGenerating] = React.useState(false);
     const [backupContent, setBackupContent] = useState(null);
+
+    // New states for the Image-to-HTML helper
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [imageGenSuccess, setImageGenSuccess] = useState(false);
+    const fileInputRef = useRef(null);
+    const pdfInputRef = useRef(null);
 
     // AI Instruction Helper
     const getAutoInstruction = (lang) => lang === 'he'
@@ -30,6 +38,69 @@ const SubMenuEditor = ({
     useEffect(() => {
         setCustomRequest(getAutoInstruction(logic.modalLang));
     }, [logic.modalLang]);
+
+    // Function to handle the Image Upload -> HTML Generation -> Clipboard
+    const handleImageToHTML = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingImage(true);
+
+        try {
+            // Prepare FormData for the Server Action
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const alt = sub.title?.[logic.modalLang] || 'image';
+
+            // Call the Server Action
+            const result = await createImageHtml(formData, alt);
+
+            if (result.html) {
+                await navigator.clipboard.writeText(result.html);
+                console.info("✅ HTML Copied from Server result");
+                setImageGenSuccess(true);
+                setTimeout(() => setImageGenSuccess(false), 3000);
+            }
+        } catch (error) {
+            console.error("Client error calling Server Action:", error);
+            alert(isHe ? "שגיאה בשרת" : "Server Error");
+        } finally {
+            setIsUploadingImage(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handlePdfToHTML = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Optional: Ask user for button text
+        const customText = prompt(isHe ? "הכנס טקסט לכפתור:" : "Enter button text:", "Download PDF");
+        if (customText === null) return; // User cancelled
+
+        setIsUploadingImage(true); // Re-using the same loading state
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const result = await createPdfHtml(formData, customText);
+
+            if (result.html) {
+                await navigator.clipboard.writeText(result.html);
+                console.info("✅ PDF Download Button copied to clipboard");
+                setImageGenSuccess(true);
+                setTimeout(() => setImageGenSuccess(false), 3000);
+            }
+        } catch (error) {
+            console.error("PDF Handler Error:", error);
+            alert(isHe ? "שגיאה בהעלאת ה-PDF" : "Error uploading PDF");
+        } finally {
+            setIsUploadingImage(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     const handleAIGenerate = async () => {
         if (isGenerating) return;
@@ -392,18 +463,79 @@ const SubMenuEditor = ({
                             </div>
                         </div>
 
-                        <div className="p-4 border-t bg-slate-50 flex justify-end">
-                            <button
-                                onClick={() => {
-                                    //publishToCloud();              // First, save to the cloud
-                                    logic.setIsModalOpen(false);   // Then, close the modal
-                                }}
-                                className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition"
-                            >
-                                <CheckCircle2 size={18}/>
-                                {isHe ? 'סגור' : 'Close'}
-                            </button>
-                        </div>
+                        <div className="p-4 border-t bg-slate-50 flex justify-between items-center">
+    {/* Bottom Left Helpers */}
+    <div className="flex items-center gap-2">
+        {/* Image Helper */}
+        <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleImageToHTML}
+        />
+        <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition border shadow-sm ${
+                imageGenSuccess
+                    ? 'bg-green-500 text-white border-transparent'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
+            }`}
+        >
+            {isUploadingImage ? (
+                <Loader2 size={14} className="animate-spin" />
+            ) : imageGenSuccess ? (
+                <Check size={14} />
+            ) : (
+                <Upload size={14} />
+            )}
+            {imageGenSuccess
+                ? (isHe ? 'הקוד הועתק!' : 'HTML Copied!')
+                : (isHe ? 'העלה תמונה (HTML)' : 'Upload Image for HTML')}
+        </button>
+
+        {/* PDF Helper */}
+        <input
+            type="file"
+            ref={pdfInputRef}
+            onChange={handlePdfToHTML}
+            accept=".pdf"
+            className="hidden"
+        />
+        <button
+            type="button"
+            onClick={() => pdfInputRef.current?.click()}
+            disabled={isUploadingImage}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition border shadow-sm ${
+                imageGenSuccess
+                    ? 'bg-green-500 text-white border-transparent'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
+            }`}
+        >
+            {isUploadingImage ? (
+                <Loader2 size={14} className="animate-spin" />
+            ) : imageGenSuccess ? (
+                <Check size={14} />
+            ) : (
+                <FileText size={14} />
+            )}
+            {imageGenSuccess
+                ? (isHe ? 'כפתור PDF הועתק!' : 'PDF Button Copied!')
+                : (isHe ? 'העלה PDF (כפתור)' : 'Upload PDF for Button')}
+        </button>
+    </div>
+
+    {/* Close Button */}
+    <button
+        onClick={() => logic.setIsModalOpen(false)}
+        className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-sm"
+    >
+        <CheckCircle2 size={18} />
+        {isHe ? 'סגור' : 'Close'}
+    </button>
+</div>
                     </div>
                 </div>
             )}
