@@ -3,8 +3,10 @@ import NewsSection from '@/components/admin/NewsSection';
 import MenuSection from '@/components/admin/MenuSection';
 import SettingSection from '@/components/admin/SettingSection';
 import MessagesSection from '@/components/admin/MessagesSection';
+import FooterSection from '@/components/admin/FooterSection';
 import AdminTabs from '@/components/admin/AdminTabs';
 import {useAdminLogic} from '@/components/admin/useAdminLogic';
+
 
 
 const AdminInterface = ({logic, currentLang = 'he'}) => {
@@ -51,6 +53,10 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
             />
 
             <main className="min-h-[400px]">
+                {activeTab === 'footer' && (
+                    <FooterSection logic={logic} isHe={isHe} />
+                )}
+
                 {activeTab === 'settings' && (
                     <SettingSection
                         logic={logic}
