@@ -327,39 +327,39 @@ const SubMenuEditor = ({
                                 </a>
 
                                 {/* THE AI BOX - TAKES ALL SPACE */}
-                                <div
-                                    className="flex-1 flex items-center gap-2 bg-white p-1 rounded-md border border-slate-200 shadow-sm min-w-0">
-                                    <button
-                                        onClick={handleAIGenerate}
-                                        disabled={isGenerating}
-                                        className={`shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border shadow-sm ${
-                                            isGenerating ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 border-transparent'
-                                        }`}
-                                    >
-                                        {isGenerating ? <Loader2 size={12} className="animate-spin"/> :
-                                            <Sparkles size={12}/>}
-                                        {isHe ? (isGenerating ? '...' : 'עריכת AI') : (isGenerating ? '...' : 'Generate AI')}
-                                    </button>
-                                    {/* RESTORE BUTTON - ONLY SHOWS IF BACKUP EXISTS */}
-                                    {backupContent !== null && (
-                                        <button
-                                            onClick={handleRestore}
-                                            title="Restore previous version"
-                                            className="shrink-0 flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-md font-bold transition border border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                                        >
-                                            <RotateCcw size={12}/>
-                                            {isHe ? 'שחזר' : 'Undo AI'}
-                                        </button>
-                                    )}
-                                    <textarea
-                                        value={customRequest}
-                                        onChange={(e) => setCustomRequest(e.target.value)}
-                                        dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}
-                                        placeholder={isHe ? "הנחיות ל-AI..." : "AI instructions..."}
-                                        className="h-10 flex-1 w-full text-sm p-2 bg-slate-50 border-none resize-none focus:ring-0 outline-none overflow-hidden"
-                                        rows={1}
-                                    />
-                                </div>
+                                {/*<div*/}
+                                {/*    className="flex-1 flex items-center gap-2 bg-white p-1 rounded-md border border-slate-200 shadow-sm min-w-0">*/}
+                                {/*    <button*/}
+                                {/*        onClick={handleAIGenerate}*/}
+                                {/*        disabled={isGenerating}*/}
+                                {/*        className={`shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border shadow-sm ${*/}
+                                {/*            isGenerating ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 border-transparent'*/}
+                                {/*        }`}*/}
+                                {/*    >*/}
+                                {/*        {isGenerating ? <Loader2 size={12} className="animate-spin"/> :*/}
+                                {/*            <Sparkles size={12}/>}*/}
+                                {/*        {isHe ? (isGenerating ? '...' : 'עריכת AI') : (isGenerating ? '...' : 'Generate AI')}*/}
+                                {/*    </button>*/}
+                                {/*    /!* RESTORE BUTTON - ONLY SHOWS IF BACKUP EXISTS *!/*/}
+                                {/*    {backupContent !== null && (*/}
+                                {/*        <button*/}
+                                {/*            onClick={handleRestore}*/}
+                                {/*            title="Restore previous version"*/}
+                                {/*            className="shrink-0 flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-md font-bold transition border border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"*/}
+                                {/*        >*/}
+                                {/*            <RotateCcw size={12}/>*/}
+                                {/*            {isHe ? 'שחזר' : 'Undo AI'}*/}
+                                {/*        </button>*/}
+                                {/*    )}*/}
+                                {/*    <textarea*/}
+                                {/*        value={customRequest}*/}
+                                {/*        onChange={(e) => setCustomRequest(e.target.value)}*/}
+                                {/*        dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}*/}
+                                {/*        placeholder={isHe ? "הנחיות ל-AI..." : "AI instructions..."}*/}
+                                {/*        className="h-10 flex-1 w-full text-sm p-2 bg-slate-50 border-none resize-none focus:ring-0 outline-none overflow-hidden"*/}
+                                {/*        rows={1}*/}
+                                {/*    />*/}
+                                {/*</div>*/}
                             </div>
 
                             <button onClick={() => logic.setIsModalOpen(false)}
