@@ -17,12 +17,12 @@ const MenuSection = ({
 
     // Helper to update specific fields within a sub-item
     const updateSubMenuField = (menuId, subId, field, value) => {
-        console.log("Updating:", { menuId, subId, field, value }); // Check your console!
+        console.log("Updating:", {menuId, subId, field, value}); // Check your console!
         setMenuData(prev => prev.map(m => {
             if (m.id === menuId) {
                 return {
                     ...m,
-                    subItems: m.subItems.map(s => s.id === subId ? { ...s, [field]: value } : s)
+                    subItems: m.subItems.map(s => s.id === subId ? {...s, [field]: value} : s)
                 };
             }
             return m;
@@ -91,10 +91,32 @@ const MenuSection = ({
                                     onRemove={() => removeSubMenu(menu.id, sub.id)}
                                     onMove={(from, to) => moveSubMenu(menu.id, from, to)}
                                     titleInputs={
-                                        <div
-                                            className="flex items-center font-bold focus:ring-0 text-sm text-slate-600">
-                                            <span>{t(sub.title) || (isHe ? 'תת-פריט חדש' : 'New Sub-item')}</span>
-                                        </div>
+                                        <>
+                                            <input
+                                                className="border-none bg-transparent focus:ring-0"
+                                                dir="rtl"
+                                                value={sub.title?.he || ''}
+                                                onChange={(e) => updateSubMenuField(
+                                                    menu.id,
+                                                    sub.id,
+                                                    'title',
+                                                    {...sub.title, he: e.target.value}
+                                                )}
+                                                placeholder="כותרת בעברית"
+                                            />
+                                            <input
+                                                className="border-none bg-transparent focus:ring-0"
+                                                dir="ltr"
+                                                value={sub.title?.en || ''}
+                                                onChange={(e) => updateSubMenuField(
+                                                    menu.id,
+                                                    sub.id,
+                                                    'title',
+                                                    {...sub.title, en: e.target.value}
+                                                )}
+                                                placeholder="English Title"
+                                            />
+                                        </>
                                     }
                                 >
                                     <div className="space-y-6">
