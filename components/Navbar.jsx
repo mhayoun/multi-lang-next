@@ -1,11 +1,25 @@
-import React, {useEffect, useState} from 'react';
-import {Settings, User, LogOut, Menu, X, ChevronDown} from 'lucide-react';
-import {LANGUAGES} from '@/lib/data';
-import {signIn, signOut, useSession} from "next-auth/react";
+import React, { useEffect, useState, useMemo } from 'react';
+import { Settings, User, LogOut, Menu, X, ChevronDown, Search } from 'lucide-react';
+import { LANGUAGES } from '@/lib/data';
+import { signIn, signOut, useSession } from "next-auth/react";
 
-const Navbar = ({logic, uiText}) => {
-    const {data: session} = useSession();
+const Navbar = ({ logic, uiText }) => {
+    const { data: session } = useSession();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // --- SEARCH LOGIC ---
+    const filteredResults = useMemo(() => {
+        if (!searchQuery.trim() || !Array.isArray(logic.menuData)) return [];
+        const query = searchQuery.toLowerCase().trim();
+        const allSubItems = logic.menuData.flatMap(menu => menu.subItems || []);
+
+        return allSubItems.filter(item => {
+            const translatedTitle = logic.t(item.title);
+            return typeof translatedTitle === 'string' &&
+                translatedTitle.toLowerCase().includes(query);
+        });
+    }, [searchQuery, logic.menuData, logic.lang, logic.t]);
 
     const handleHomeClick = () => {
         logic.setActiveSubItem(null);
@@ -30,7 +44,8 @@ const Navbar = ({logic, uiText}) => {
 
         logic.setView('user');
         setIsMenuOpen(false);
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        setSearchQuery(""); // Reset search on navigation
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleSignOut = () => {
@@ -56,7 +71,7 @@ const Navbar = ({logic, uiText}) => {
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
                     >
-                        {isMenuOpen ? <X size={20}/> : <Menu size={20}/>}
+                        {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
 
                     <button
@@ -64,8 +79,7 @@ const Navbar = ({logic, uiText}) => {
                         className="flex items-center transition-all active:scale-95 outline-none hover:brightness-110"
                     >
                         {logic.logo ? (
-                            <img src={logic.logo} alt="Logo"
-                                 className="h-14 md:h-20 w-auto object-contain"/>
+                            <img src={logic.logo} alt="Logo" className="h-14 md:h-20 w-auto object-contain" />
                         ) : (
                             <h1 className="font-black text-sm md:text-base tracking-tighter text-slate-800 uppercase group">
                                 Dynamic<span className="text-blue-600 group-hover:text-blue-700">Port</span>
@@ -85,14 +99,11 @@ const Navbar = ({logic, uiText}) => {
                                     <button
                                         onClick={() => {
                                             if (isContact) {
-                                                document.getElementById('footer')?.scrollIntoView({behavior: 'smooth'});
+                                                document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
                                             } else if (isSingleItem) {
                                                 handleSubItemClick(menu.subItems[0]);
                                             }
                                         }}
-                                        /* ADDED: hover:font-black and transition-all.
-                                           We use px-3 to ensure there is enough room for the text to expand slightly without jumping.
-                                        */
                                         className={`px-3 py-1.5 rounded-md text-[12px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 hover:scale-105 ${
                                             (isSingleItem || isContact)
                                                 ? 'hover:text-blue-600 hover:font-black hover:bg-slate-50 cursor-pointer'
@@ -101,21 +112,17 @@ const Navbar = ({logic, uiText}) => {
                                     >
                                         {logic.t(menu.title)}
                                         {hasSubItems && !isSingleItem && !isContact && (
-                                            <ChevronDown size={12}
-                                                         className="text-slate-400 group-hover:text-blue-600 transition-transform group-hover:rotate-180"/>
+                                            <ChevronDown size={12} className="text-slate-400 group-hover:text-blue-600 transition-transform group-hover:rotate-180" />
                                         )}
                                     </button>
 
                                     {hasSubItems && !isSingleItem && !isContact && (
-                                        <div
-                                            className="absolute top-full ltr:left-0 rtl:right-0 mt-0 hidden group-hover:block pt-2 z-[60]">
-                                            <div
-                                                className="bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[180px] animate-in fade-in zoom-in-95 duration-150">
+                                        <div className="absolute top-full ltr:left-0 rtl:right-0 mt-0 hidden group-hover:block pt-2 z-[60]">
+                                            <div className="bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[180px] animate-in fade-in zoom-in-95 duration-150">
                                                 {menu.subItems.map((sub) => (
                                                     <button
                                                         key={sub.id}
                                                         onClick={() => handleSubItemClick(sub)}
-                                                        /* ADDED: hover:font-black for sub-items */
                                                         className="w-full text-start px-3 py-2 hover:bg-blue-50 hover:text-blue-700 hover:font-black rounded-lg text-[12px] font-bold transition-all"
                                                     >
                                                         {logic.t(sub.title)}
@@ -140,7 +147,7 @@ const Navbar = ({logic, uiText}) => {
                                     logic.view === 'user' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-900'
                                 }`}
                             >
-                                <User size={12}/> {uiText.user}
+                                <User size={12} /> {uiText.user}
                             </button>
                             <button
                                 onClick={() => logic.setView('admin')}
@@ -148,20 +155,49 @@ const Navbar = ({logic, uiText}) => {
                                     logic.view === 'admin' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-900'
                                 }`}
                             >
-                                <Settings size={12}/> {uiText.switch}
+                                <Settings size={12} /> {uiText.switch}
                             </button>
                         </div>
                     )}
 
+                    {/* Desktop Search Bar */}
+                    <div className="hidden lg:relative lg:block">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-40 bg-slate-100 border-none rounded-full py-1.5 px-4 pl-9 text-[11px] font-bold focus:ring-2 focus:ring-blue-400 transition-all outline-none"
+                        />
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        {searchQuery.trim() && (
+                            <div dir="rtl" className="absolute top-full right-0 mt-2 w-64 bg-white shadow-2xl rounded-lg border border-slate-200 overflow-hidden z-[9999]">
+                                {filteredResults.length > 0 ? (
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {filteredResults.map((item) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => handleSubItemClick(item)}
+                                                className="w-full text-right px-4 py-3 hover:bg-blue-50 border-b border-slate-50 last:border-none transition-colors"
+                                            >
+                                                <div className="text-[12px] font-bold text-slate-700">{logic.t(item.title)}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-4 text-center text-slate-400 text-[11px]">לא נמצאו תוצאות</div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
                     <select
                         value={logic.lang}
                         onChange={(e) => logic.setLang(e.target.value)}
-                        /* Reduced to text-[10px], changed font to bold, and added a small w-9 to keep it tiny */
                         className="bg-transparent font-bold text-[10px] uppercase tracking-tighter outline-none cursor-pointer border-none focus:ring-0 text-slate-600 hover:text-blue-600 transition-colors w-9"
                     >
                         {Object.entries(LANGUAGES).map(([code, info]) => (
                             <option key={code} value={code} className="font-bold text-sm">
-                                {/* If your info.label is "Hebrew", you might want to use "עב" here directly or info.shortLabel */}
                                 {info.label === 'עברית' ? 'עב' : info.label === 'English' ? 'En' : info.label}
                             </option>
                         ))}
@@ -170,19 +206,13 @@ const Navbar = ({logic, uiText}) => {
                     <div className="border-l border-slate-200 pl-3 h-6 flex items-center gap-3">
                         {session ? (
                             <div className="flex items-center gap-2">
-                                <img src={session.user.image}
-                                     className="w-7 h-7 rounded-full border border-slate-200 shadow-sm hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
-                                     alt="P"/>
-                                <button onClick={handleSignOut}
-                                        className="p-1 text-slate-400 hover:text-red-600 transition-colors">
-                                    <LogOut size={16}/>
+                                <img src={session.user.image} className="w-7 h-7 rounded-full border border-slate-200" alt="P" />
+                                <button onClick={handleSignOut} className="p-1 text-slate-400 hover:text-red-600 transition-colors">
+                                    <LogOut size={16} />
                                 </button>
                             </div>
                         ) : (
-                            <button
-                                onClick={() => signIn("google")}
-                                className="text-[10px] font-bold uppercase tracking-tight text-blue-600 hover:text-blue-800 hover:scale-105 transition-all"
-                            >
+                            <button onClick={() => signIn("google")} className="text-[10px] font-bold uppercase text-blue-600 hover:text-blue-800 transition-all">
                                 Login
                             </button>
                         )}
@@ -190,31 +220,42 @@ const Navbar = ({logic, uiText}) => {
                 </div>
             </div>
 
-            {/* --- MOBILE MENU --- */}
+            {/* --- RESTORED MOBILE MENU --- */}
             {isMenuOpen && (
-                <div className="md:hidden border-t border-slate-100 bg-white p-4 space-y-4 animate-in slide-in-from-top
-                duration-200 shadow-inner max-h-[calc(100vh-70px)] overflow-y-auto overscroll-contain">
-                    {logic.menuData.map((menu) => {
-                        const isContact = menu.type === 'contact';
-                        const hasSubItems = menu.subItems && menu.subItems.length > 0;
+                <div className="md:hidden border-t border-slate-100 bg-white p-4 space-y-4 animate-in slide-in-from-top duration-200 shadow-inner max-h-[calc(100vh-70px)] overflow-y-auto">
 
-                        return (
-                            <div key={menu.id} className="space-y-1">
-                                {isContact ? (
-                                    <button
-                                        onClick={() => handleSubItemClick(menu)}
-                                        className="w-full text-start px-3 py-2 text-blue-600 hover:bg-blue-50 hover:font-black rounded-lg font-bold text-[12px] uppercase tracking-widest transition-all"
-                                    >
-                                        {logic.t(menu.title)}
+                    {/* Mobile Search Input */}
+                    <div className="relative mb-2">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-slate-100 border-none rounded-full py-2 px-4 pl-10 text-xs focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    </div>
+
+                    {searchQuery ? (
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black text-blue-500 px-3 uppercase">Results ({filteredResults.length})</p>
+                            {filteredResults.length > 0 ? (
+                                filteredResults.map(sub => (
+                                    <button key={sub.id} onClick={() => handleSubItemClick(sub)} className="w-full text-start px-4 py-3 bg-slate-50 rounded-xl">
+                                        <div className="text-xs font-black text-slate-800">{logic.t(sub.title)}</div>
                                     </button>
-                                ) : (
-                                    <div
-                                        className="text-[10px] font-black text-slate-400 px-3 uppercase tracking-[0.2em] pt-2">
-                                        {logic.t(menu.title)}
-                                    </div>
-                                )}
-
-                                {hasSubItems && menu.subItems.map((sub) => (
+                                ))
+                            ) : (
+                                <p className="text-center py-4 text-xs text-slate-400">No matches found</p>
+                            )}
+                        </div>
+                    ) : (
+                        logic.menuData.map((menu) => (
+                            <div key={menu.id} className="space-y-1">
+                                <div className="text-[10px] font-black text-slate-400 px-3 uppercase tracking-[0.2em] pt-2">
+                                    {logic.t(menu.title)}
+                                </div>
+                                {menu.subItems?.map((sub) => (
                                     <button
                                         key={sub.id}
                                         onClick={() => handleSubItemClick(sub)}
@@ -224,8 +265,8 @@ const Navbar = ({logic, uiText}) => {
                                     </button>
                                 ))}
                             </div>
-                        );
-                    })}
+                        ))
+                    )}
                 </div>
             )}
         </nav>
