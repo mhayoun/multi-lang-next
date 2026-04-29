@@ -96,7 +96,7 @@ const MenuSection = ({
                                             {(isHe ? ['he', 'en'] : ['en', 'he']).map((lang) => (
                                                 <input
                                                     key={lang}
-                                                    className="border-none bg-transparent font-bold focus:ring-0 flex-1"
+                                                    className="border-none bg-transparent focus:ring-0 flex-1"
                                                     dir={lang === 'he' ? 'rtl' : 'ltr'}
                                                     value={sub.title?.[lang] || ''}
                                                     onChange={(e) => updateSubMenuField(
