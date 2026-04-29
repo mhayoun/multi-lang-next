@@ -20,14 +20,16 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
     } = useAdminLogic(logic);
 
     const {
-        menuData, newsData, handleFileUpload, removeFile, addMenu,
+        menuData, newsData, footerData, handleFileUpload, removeFile, addMenu,
         addSubMenu, removeMenu, addNews, removeNews, logo, setLogo,
-        setMenuData, setNewsData, t
+        setMenuData, setNewsData, setFooterData, t
     } = logic;
 
     const exportData = () => {
         const downloadJSON = (data, fileName) => {
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const blob = new Blob(
+                [JSON.stringify(data, null, 2)],
+                {type: 'application/json'});
             const href = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = href;
@@ -39,11 +41,57 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
         };
         downloadJSON(menuData, 'DEFAULT_MENU.json');
         downloadJSON(newsData, 'DEFAULT_NEWS.json');
-        downloadJSON(newsData, 'DEFAULT_FOOTER.json');
+        downloadJSON(footerData, 'DEFAULT_FOOTER.json');
+    };
+
+    /**
+     * Single File Import Handler
+     * Detects filename and updates the specific data slice
+     */
+    const handleImportChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target.result);
+                const fileName = file.name;
+
+                if (fileName === 'DEFAULT_MENU.json') {
+                    setMenuData(json);
+                    console.log("✅ Menu Data Updated:", json);
+                } else if (fileName === 'DEFAULT_NEWS.json') {
+                    setNewsData(json);
+                    console.log("✅ News Data Updated:", json);
+                } else if (fileName === 'DEFAULT_FOOTER.json') {
+                    // Since your hook defines this, we can call it directly
+                    setFooterData(json);
+                    console.log("✅ Footer Data Updated:", json);
+                } else {
+                    alert(`Filename mismatch: ${fileName}`);
+                }
+            } catch (err) {
+                console.error("Import Error:", err);
+                alert("Failed to parse JSON. Check file format.");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
     };
 
     return (
         <div className="space-y-8 max-w-4xl mx-auto pb-20 px-4" dir={isHe ? "rtl" : "ltr"}>
+
+            {/* Hidden Input for Import */}
+            <input
+                type="file"
+                id="admin-import-input"
+                multiple
+                accept=".json"
+                className="hidden"
+                onChange={handleImportChange}
+            />
 
             {/* Navigation & Publish Control */}
             <AdminTabs
@@ -55,7 +103,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
 
             <main className="min-h-[400px]">
                 {activeTab === 'footer' && (
-                    <FooterSection logic={logic} isHe={isHe} />
+                    <FooterSection logic={logic} isHe={isHe}/>
                 )}
 
                 {activeTab === 'settings' && (
@@ -63,6 +111,8 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
                         logic={logic}
                         isHe={isHe}
                         exportData={exportData}
+                        /* Passing trigger function to open file dialog */
+                        importData={() => document.getElementById('admin-import-input').click()}
                         logo={logo}
                         setLogo={setLogo}
                         updateLogo={updateLogo}
