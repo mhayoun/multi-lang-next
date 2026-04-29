@@ -37,12 +37,26 @@ const HomeNewsSlider = ({
     const currentItem = newsData[currentNewsIndex];
 
     // 3. Logique de sélection de l'image (Fallback vers images[0] si les spécifiques sont vides)
+    // const getBannerImage = () => {
+    //     if (isMobile) {
+    //         return currentItem.bgImage_mob || currentItem.bgImage_web || currentItem.images?.[0] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c';
+    //     }
+    //     return currentItem.bgImage_web || currentItem.bgImage_mob || currentItem.images?.[0] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c';
+    // };
+
     const getBannerImage = () => {
-        if (isMobile) {
-            return currentItem.bgImage_mob || currentItem.bgImage_web || currentItem.images?.[0] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c';
-        }
-        return currentItem.bgImage_web || currentItem.bgImage_mob || currentItem.images?.[0] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c';
-    };
+    const fallback = currentItem.images?.[0] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c';
+
+    if (isHe) {
+        return isMobile
+            ? (currentItem.bgImage_mob?.[0] || fallback)
+            : (currentItem.bgImage_web?.[0] || fallback);
+    } else {
+        return isMobile
+            ? (currentItem.bgImage_mob_en?.[0] || currentItem.bgImage_mob?.[0] || fallback)
+            : (currentItem.bgImage_web_en?.[0] || currentItem.bgImage_web?.[0] ||  fallback);
+    }
+};
 
     return (
         <div
