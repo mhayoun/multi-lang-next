@@ -156,10 +156,14 @@ const Navbar = ({logic, uiText}) => {
                     <select
                         value={logic.lang}
                         onChange={(e) => logic.setLang(e.target.value)}
-                        className="bg-transparent font-black text-[12px] uppercase tracking-tighter outline-none cursor-pointer border-none focus:ring-0 text-slate-700 hover:text-blue-600 transition-colors"
+                        /* Reduced to text-[10px], changed font to bold, and added a small w-9 to keep it tiny */
+                        className="bg-transparent font-bold text-[10px] uppercase tracking-tighter outline-none cursor-pointer border-none focus:ring-0 text-slate-600 hover:text-blue-600 transition-colors w-9"
                     >
                         {Object.entries(LANGUAGES).map(([code, info]) => (
-                            <option key={code} value={code} className="font-bold">{info.label}</option>
+                            <option key={code} value={code} className="font-bold text-sm">
+                                {/* If your info.label is "Hebrew", you might want to use "עב" here directly or info.shortLabel */}
+                                {info.label === 'עברית' ? 'עב' : info.label === 'English' ? 'En' : info.label}
+                            </option>
                         ))}
                     </select>
 
@@ -175,8 +179,10 @@ const Navbar = ({logic, uiText}) => {
                                 </button>
                             </div>
                         ) : (
-                            <button onClick={() => signIn("google")}
-                                    className="text-[12px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 hover:scale-110 transition-all">
+                            <button
+                                onClick={() => signIn("google")}
+                                className="text-[10px] font-bold uppercase tracking-tight text-blue-600 hover:text-blue-800 hover:scale-105 transition-all"
+                            >
                                 Login
                             </button>
                         )}
