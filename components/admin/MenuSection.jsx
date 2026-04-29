@@ -51,17 +51,18 @@ const MenuSection = ({
                     onMove={moveMenu}
                     titleInputs={
                         <>
-                            <input className="border-none bg-transparent font-bold focus:ring-0" dir="rtl"
-                                   value={menu.title?.he || ''}
-                                   onChange={(e) => updateMenuTitle(menu.id, 'he', e.target.value)}
-                                   placeholder="כותרת בעברית"/>
-                            <input className="border-none bg-transparent font-bold focus:ring-0" dir="ltr"
-                                   value={menu.title?.en || ''}
-                                   onChange={(e) => updateMenuTitle(menu.id, 'en', e.target.value)}
-                                   placeholder="English Title"/>
+                            {(isHe ? ['he', 'en'] : ['en', 'he']).map((lang) => (
+                                <input
+                                    key={lang}
+                                    className="border-none bg-transparent font-bold focus:ring-0 flex-1"
+                                    dir={lang === 'he' ? 'rtl' : 'ltr'}
+                                    value={menu.title?.[lang] || ''}
+                                    onChange={(e) => updateMenuTitle(menu.id, lang, e.target.value)}
+                                    placeholder={lang === 'he' ? "כותרת בעברית" : "English Title"}
+                                />
+                            ))}
                         </>
-                    }
-                >
+                    }>
                     {/* Card background image */}
                     <MenuBackgroundEditor
                         menu={menu}
@@ -92,30 +93,21 @@ const MenuSection = ({
                                     onMove={(from, to) => moveSubMenu(menu.id, from, to)}
                                     titleInputs={
                                         <>
-                                            <input
-                                                className="border-none bg-transparent focus:ring-0"
-                                                dir="rtl"
-                                                value={sub.title?.he || ''}
-                                                onChange={(e) => updateSubMenuField(
-                                                    menu.id,
-                                                    sub.id,
-                                                    'title',
-                                                    {...sub.title, he: e.target.value}
-                                                )}
-                                                placeholder="כותרת בעברית"
-                                            />
-                                            <input
-                                                className="border-none bg-transparent focus:ring-0"
-                                                dir="ltr"
-                                                value={sub.title?.en || ''}
-                                                onChange={(e) => updateSubMenuField(
-                                                    menu.id,
-                                                    sub.id,
-                                                    'title',
-                                                    {...sub.title, en: e.target.value}
-                                                )}
-                                                placeholder="English Title"
-                                            />
+                                            {(isHe ? ['he', 'en'] : ['en', 'he']).map((lang) => (
+                                                <input
+                                                    key={lang}
+                                                    className="border-none bg-transparent font-bold focus:ring-0 flex-1"
+                                                    dir={lang === 'he' ? 'rtl' : 'ltr'}
+                                                    value={sub.title?.[lang] || ''}
+                                                    onChange={(e) => updateSubMenuField(
+                                                        menu.id,
+                                                        sub.id,
+                                                        'title',
+                                                        {...sub.title, [lang]: e.target.value}
+                                                    )}
+                                                    placeholder={lang === 'he' ? "כותרת בעברית" : "English Title"}
+                                                />
+                                            ))}
                                         </>
                                     }
                                 >
