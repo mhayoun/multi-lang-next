@@ -145,7 +145,7 @@ const DetailView = ({ activeSubItem, setActiveSubItem, menuData, t, isHe, uiText
                 {uiText.back}
             </button>
 
-            <h1 className="text-4xl font-black mb-6 text-slate-800">{t(activeSubItem.title)}</h1>
+            {/*<h1 className="text-4xl font-black mb-6 text-slate-800">{t(activeSubItem.title)}</h1>*/}
 
             <div
                 className={`text-base leading-relaxed text-slate-600 mb-12 
