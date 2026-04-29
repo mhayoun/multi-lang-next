@@ -1,8 +1,8 @@
 import React from 'react';
-import {Plus, Trash2, FileText, Link2} from 'lucide-react'; // Added icons
+import {Plus, Trash2, FileText, Link2} from 'lucide-react';
 import SubMenuEditor from '@/components/admin/SubMenuEditor';
 import SliderLinker from '@/components/admin/SliderLinker';
-import SliderLinkerOnce from '@/components/admin/SliderLinkerOnce'; // Added import
+import SliderLinkerOnce from '@/components/admin/SliderLinkerOnce';
 import EditorAccordionItem from '@/components/admin/EditorAccordionItem';
 import MenuBackgroundEditor from "@/components/admin/MenuBackgroundEditor";
 
