@@ -15,13 +15,14 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
     const {
         activeTab, setActiveTab, openItems, toggleAccordion, updateLogo,
         updateMenuBg, updateMenuTitle, updateNewsTitle, linkItemToNews, unlinkItemFromNews,
-        linkItemToSub, unlinkItemFromSub, publishToCloud, moveSubMenu, removeSubMenu
+        linkItemToSub, unlinkItemFromSub, publishToCloud, moveSubMenu, removeSubMenu,
+        moveMenu, moveNews
     } = useAdminLogic(logic);
 
     const {
         menuData, newsData, handleFileUpload, removeFile, addMenu,
         addSubMenu, removeMenu, addNews, removeNews, logo, setLogo,
-        moveMenu, moveNews, setMenuData, setNewsData, t
+        setMenuData, setNewsData, t
     } = logic;
 
     const exportData = () => {

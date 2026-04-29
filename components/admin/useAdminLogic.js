@@ -2,7 +2,8 @@ import {useState} from 'react';
 
 export const useAdminLogic = (logic) => {
     // 1. Ensure 'logo' is extracted from the logic passed in
-    const {menuData, setMenuData, newsData, setNewsData, logo, setLogo, siteSettings} = logic;
+    const {menuData, setMenuData, newsData, setNewsData,
+        logo, setLogo, siteSettings, moveMenu, moveNews} = logic;
     const [activeTab, setActiveTab] = useState('menu');
     const [openItems, setOpenItems] = useState({});
 
@@ -195,6 +196,8 @@ export const useAdminLogic = (logic) => {
         publishToCloud,
         addSubMenu,
         removeSubMenu,
-        moveSubMenu
+        moveSubMenu,
+        moveMenu,
+        moveNews
     };
 };
