@@ -46,20 +46,6 @@ const SubMenuEditor = ({ sub, menuId, isHe, handleFileUpload, removeFile, setMen
                 </button>
             </div>
 
-            {/* 2. TITLE GRID */}
-            {/*<div className="grid grid-cols-2 gap-4">*/}
-            {/*    {['he', 'en'].map(lang => (*/}
-            {/*        <input*/}
-            {/*            key={lang}*/}
-            {/*            dir={lang === 'he' ? 'rtl' : 'ltr'}*/}
-            {/*            className={`border p-2 rounded font-medium ${isHe ? (lang === 'he' ? 'order-1' : 'order-2') : (lang === 'en' ? 'order-1' : 'order-2')}`}*/}
-            {/*            value={sub.title?.[lang] || ''}*/}
-            {/*            placeholder={lang === 'he' ? 'כותרת...' : 'Title...'}*/}
-            {/*            onChange={(e) => logic.handleUpdateField('title', lang, e.target.value)}*/}
-            {/*        />*/}
-            {/*    ))}*/}
-            {/*</div>*/}
-
             {/* 3. CONTENT AREA */}
             <div className="grid grid-cols-2 gap-4">
                 {['he', 'en'].map((lang) => (
