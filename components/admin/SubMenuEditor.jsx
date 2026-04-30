@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
     Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2, Link,
-    GripVertical, Copy, Check, Video, ExternalLink, Sparkles, RotateCcw, Upload
+    GripVertical, Copy, Check, Video, ExternalLink, Sparkles, RotateCcw, Upload, Bot
 } from 'lucide-react';
 
 import {useSubMenuEditor} from '@/components/admin/SubMenuEditor_Logic';
@@ -21,7 +21,7 @@ const SubMenuEditor = ({sub, menuId, isHe, handleFileUpload, removeFile, setMenu
 
     const getAutoInstruction = (lang) => lang === 'he'
         ? "צור קוד HTML נקי עבור תוכן זה (ללא תגיות html, head או body). שמור על רשימות וצבעים."
-        : "Generate clean HTML code for this content (excluding html, head, or body tags). Preserve bullet points and colors.";
+        : "Generate clean HTML code for this content for web and mobile (excluding html, head, or body tags). Preserve bullet points and colors.";
 
     const [customRequest, setCustomRequest] = useState(getAutoInstruction(logic.modalLang));
 
@@ -192,23 +192,43 @@ const SubMenuEditor = ({sub, menuId, isHe, handleFileUpload, removeFile, setMenu
                                 {/* AI TOOLBOX */}
                                 <div
                                     className="flex-1 flex items-center gap-2 bg-white p-1 rounded-md border border-slate-200 shadow-sm min-w-0">
+
+                                    {/* Standard AI Action Button */}
                                     <ActionButton
                                         variant="ai"
                                         onClick={() => actions.handleAIGenerate(customRequest)}
                                         loading={actions.isGenerating}
                                         icon={Sparkles}
-                                        label={isHe ? (actions.isGenerating ? '...' : 'הפק AI') : (actions.isGenerating ? '...' : 'Generate AI')}
+                                        label={isHe ? (actions.isGenerating ? '...' : 'ייצר AI') : (actions.isGenerating ? '...' : 'Generate AI')}
                                     />
+
+                                    {/* NEW: Gemini AI Button */}
+                                    <ActionButton
+                                        variant="gemini" // Ensure your ActionButton component handles this variant or use custom className
+                                        onClick={() => actions.handleGeminiGenerate(customRequest)}
+                                        loading={actions.isGeminiGenerating}
+                                        icon={Bot} // Import 'Bot' from lucide-react or use a custom SVG for the Gemini logo
+                                        className="bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:from-blue-700 hover:to-violet-700 border-none shadow-md"
+                                        label={isHe ? (actions.isGeminiGenerating ? '...' : 'Gemini AI') : (actions.isGeminiGenerating ? '...' : 'Gemini AI')}
+                                    />
+
                                     {actions.backupContent && (
-                                        <button onClick={actions.handleRestore}
-                                                className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-md font-bold border border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100">
-                                            <RotateCcw size={12}/> {isHe ? 'בטל' : 'Undo'}
+                                        <button
+                                            onClick={actions.handleRestore}
+                                            className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-md font-bold border border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                                        >
+                                            <RotateCcw size={12}/> {isHe ? 'ביטול' : 'Undo'}
                                         </button>
                                     )}
-                                    <textarea value={customRequest} onChange={(e) => setCustomRequest(e.target.value)}
-                                              dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}
-                                              className="h-10 flex-1 text-sm p-2 bg-slate-50 border-none resize-none outline-none overflow-hidden"
-                                              rows={1}/>
+
+                                    <textarea
+                                        value={customRequest}
+                                        onChange={(e) => setCustomRequest(e.target.value)}
+                                        dir={logic.modalLang === 'he' ? 'rtl' : 'ltr'}
+                                        placeholder={isHe ? 'בקשה מותאמת אישית...' : 'Custom request...'}
+                                        className="h-10 flex-1 text-sm p-2 bg-slate-50 border-none resize-none outline-none overflow-hidden"
+                                        rows={1}
+                                    />
                                 </div>
                             </div>
                             <button onClick={() => logic.setIsModalOpen(false)}
