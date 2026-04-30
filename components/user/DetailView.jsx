@@ -149,7 +149,9 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
             {/*<h1 className="text-4xl font-black mb-6 text-slate-800">{t(activeSubItem.title)}</h1>*/}
 
             <div
-                className={`text-base leading-relaxed text-slate-600 mb-12 ${isHe ? 'text-right pr-6' : 'text-left pl-6'}`}
+                className={`text-base leading-relaxed text-slate-600 mb-12 mx-auto 
+                            ${isHe ? 'text-right md:pr-6' : 'text-left md:pl-6'} 
+                            w-full max-w-prose text-center md:text-initial`}
                 dangerouslySetInnerHTML={{__html: processedHtml}}
             />
 
