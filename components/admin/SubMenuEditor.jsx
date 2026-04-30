@@ -177,9 +177,16 @@ const SubMenuEditor = ({sub, menuId, isHe, handleFileUpload, removeFile, setMenu
 
                                 <ActionButton onClick={logic.handleCopy} icon={logic.copied ? Check : Copy}
                                               label={isHe ? (logic.copied ? 'הועתק!' : 'העתק תוכן') : (logic.copied ? 'Copied!' : 'Copy Content')}/>
+
                                 <a href="https://bestonlinehtmleditor.com/" target="_blank" rel="noopener noreferrer"
                                    className="shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100">
                                     <ExternalLink size={12}/> {isHe ? 'עורך HTML' : 'HTML Editor'}
+                                </a>
+
+                                {/* Gemini Button */}
+                                <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer"
+                                   className="shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100">
+                                    <ExternalLink size={12}/> {isHe ? 'ג׳ימיני' : 'Gemini'}
                                 </a>
 
                                 {/* AI TOOLBOX */}
@@ -263,6 +270,13 @@ const SubMenuEditor = ({sub, menuId, isHe, handleFileUpload, removeFile, setMenu
                                     icon={FileText}
                                     label={isHe ? 'PDF לכפתור' : 'PDF to Button'}
                                 />
+
+                                {/* JSON Viewer Button */}
+                                <a href="https://json.onlineviewer.net/" target="_blank" rel="noopener noreferrer"
+                                   className="shrink-0 flex items-center gap-2 text-[10px] px-3 py-1.5 rounded-md font-bold transition border bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100">
+                                    <ExternalLink size={12}/> {isHe ? 'צופה JSON' : 'JSON Viewer'}
+                                </a>
+
                             </div>
                             <button onClick={() => logic.setIsModalOpen(false)}
                                     className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-sm">

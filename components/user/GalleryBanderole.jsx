@@ -16,13 +16,14 @@ const GalleryBanderole = ({ media, isHe }) => {
         closeLightbox
     } = useGallery(media, isHe);
 
+    // Combine all media into one master list
+    // Videos usually look better first in a mixed gallery, but you can swap these
     const allItems = [...videoItems, ...imageItems];
 
     const renderMedia = (item, index, isSingle = false) => {
         const isYoutube = checkIsYoutube(item);
         const yt = isYoutube ? getYoutubeInfo(item.url) : null;
 
-        // FEATURE: Display single video/youtube "as is" (active player)
         if (isSingle) {
             if (isYoutube) {
                 return (
@@ -45,7 +46,6 @@ const GalleryBanderole = ({ media, isHe }) => {
                     />
                 );
             }
-            // Requirement: Single images as plain <img> tags
             return (
                 <img
                     src={item.url}
@@ -56,7 +56,6 @@ const GalleryBanderole = ({ media, isHe }) => {
             );
         }
 
-        // Default Thumbnails for the Banderole (multiple items)
         return (
             <div
                 onClick={() => setSelectedIndex(index)}
@@ -88,48 +87,39 @@ const GalleryBanderole = ({ media, isHe }) => {
         );
     };
 
-    const BanderoleSection = ({ sectionItems, id }) => {
-        if (sectionItems.length === 0) return null;
-        const isMultiple = sectionItems.length > 1;
-
-        return (
-            <div className="mb-10">
-                <div className="relative group/gallery">
-                    {!isMultiple ? (
-                        <div className="px-2 flex justify-center">
-                            {renderMedia(sectionItems[0], allItems.indexOf(sectionItems[0]), true)}
-                        </div>
-                    ) : (
-                        <div className="relative">
-                            <button type="button" onClick={() => scroll('left', id)} className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'right-2' : 'left-2'}`}>
-                                <ChevronLeft size={20} />
-                            </button>
-                            <button type="button" onClick={() => scroll('right', id)} className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'left-2' : 'right-2'}`}>
-                                <ChevronRight size={20} />
-                            </button>
-                            <div id={id} className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x scroll-smooth px-2">
-                                {sectionItems.map((item) => (
-                                    <React.Fragment key={item.url}>{renderMedia(item, allItems.indexOf(item), false)}</React.Fragment>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    };
-
     return (
         <div className="mb-12" dir={isHe ? 'rtl' : 'ltr'}>
-            <BanderoleSection
-                sectionItems={imageItems}
-                id="image-container"
-            />
+            {/* Unified Banderole Section */}
+            <div className="mb-10">
+                <div className="relative group/gallery">
+                    <div className="relative">
+                        {/* Navigation Buttons */}
+                        <button
+                            type="button"
+                            onClick={() => scroll('left', 'main-gallery')}
+                            className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'right-2' : 'left-2'}`}
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => scroll('right', 'main-gallery')}
+                            className={`absolute top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2 rounded-full shadow-xl opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-blue-600 hover:text-white ${isHe ? 'left-2' : 'right-2'}`}
+                        >
+                            <ChevronRight size={20} />
+                        </button>
 
-            <BanderoleSection
-                sectionItems={videoItems}
-                id="video-container"
-            />
+                        {/* Combined Scroll Container */}
+                        <div id="main-gallery" className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x scroll-smooth px-2">
+                            {allItems.map((item, idx) => (
+                                <React.Fragment key={`${item.url}-${idx}`}>
+                                    {renderMedia(item, idx, false)}
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* LIGHTBOX OVERLAY */}
             {selectedIndex !== null && (
@@ -151,6 +141,8 @@ const GalleryBanderole = ({ media, isHe }) => {
                         <div className="relative w-full flex justify-center items-center h-[70vh]">
                             {(() => {
                                 const currentItem = allItems[selectedIndex];
+                                if (!currentItem) return null;
+
                                 if (checkIsYoutube(currentItem)) {
                                     return <iframe src={getYoutubeInfo(currentItem.url).embed} className="w-full h-full rounded-xl shadow-2xl aspect-video" allow="autoplay; encrypted-media" allowFullScreen title="Youtube" />;
                                 } else if (currentItem.type === 'video') {
