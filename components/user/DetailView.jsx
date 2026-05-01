@@ -66,6 +66,11 @@ const PDFRow = ({pdf, i, isHe}) => {
 
 const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}) => {
 
+    // --- NEW FEATURE: Find Parent Category for Breadcrumbs ---
+    const parentCategory = menuData.find(category =>
+        category.subItems.some(s => s.id === activeSubItem.id)
+    );
+
     const getProcessedContent = (htmlContent, title) => {
         if (!htmlContent) return '';
 
@@ -74,10 +79,9 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
 
         return htmlContent.replace(mobileRegex, (match, offset, fullString) => {
             // 1. SAFETY CHECK: Look back at the characters before the match.
-            // If the number is part of an attribute (like href="tel:050...") we skip it.
             const context = fullString.substring(Math.max(0, offset - 10), offset);
             if (context.includes('tel:') || context.includes('wa.me') || context.includes('href=')) {
-                return match; // Return the number as-is without adding a button
+                return match;
             }
 
             const rawNumber = match.replace(/\D/g, '');
@@ -134,27 +138,45 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
     const processedHtml = getProcessedContent(t(activeSubItem.content), t(activeSubItem.title));
 
     return (
-        <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4" dir={isHe ? 'rtl' : 'ltr'}>
-            <button
-                onClick={() => {
-                    setActiveSubItem(null);
-                    window.scrollTo({top: 0, behavior: 'smooth'});
-                }}
-                className="text-blue-600 mb-8 flex items-center gap-2 font-bold"
-            >
-                {isHe ? <ChevronRight size={20}/> : <ChevronLeft size={20}/>}
-                {uiText.back}
-            </button>
+        <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4" dir={isHe ? 'rtl' : 'ltr'}>
 
-            {/*<h1 className="text-4xl font-black mb-6 text-slate-800">{t(activeSubItem.title)}</h1>*/}
+            {/* Main Grid Container: 1 Col on Mobile, 2 Cols on Desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 md:gap-8">
 
-            <div
-                className={`text-base leading-relaxed text-slate-600 mb-12 mx-auto 
-                            ${isHe ? 'text-right md:pr-6' : 'text-left md:pl-6'} 
-                            w-full max-w-prose text-center md:text-initial`}
-                dangerouslySetInnerHTML={{__html: processedHtml}}
-            />
+                {/* COLUMN 1: Back Button */}
+                <div className={`${isHe ? 'text-right' : 'text-left'}`}>
+                    <button
+                        onClick={() => {
+                            setActiveSubItem(null);
+                            window.scrollTo({top: 0, behavior: 'smooth'});
+                        }}
+                        className="text-blue-600 flex items-center gap-2 font-bold hover:opacity-70 transition-opacity sticky top-8"
+                    >
+                        {isHe ? <ChevronRight size={20}/> : <ChevronLeft size={20}/>}
+                        {uiText.back}
+                    </button>
+                </div>
 
+                {/* COLUMN 2: Breadcrumbs + Content */}
+                <div className="w-full">
+                    {/* Breadcrumbs aligned with the content start */}
+                    <div
+                        className={`flex items-center gap-2 text-sm text-slate-400 mb-4 font-medium opacity-80 ${isHe ? 'justify-start' : 'justify-start'}`}>
+                        <span className="truncate">{parentCategory ? t(parentCategory.title) : ''}</span>
+                        {isHe ? <ChevronLeft size={14} className="shrink-0"/> :
+                            <ChevronRight size={14} className="shrink-0"/>}
+                        <span className="text-blue-600 font-bold truncate">{t(activeSubItem.title)}</span>
+                    </div>
+
+                    {/* Main HTML Content */}
+                    <div
+                        className={`text-base leading-relaxed text-slate-600 mb-12 max-w-prose ${isHe ? 'text-right' : 'text-left'}`}
+                        dangerouslySetInnerHTML={{__html: processedHtml}}
+                    />
+                </div>
+            </div>
+
+            {/* Assets Section (Stays Full Width below the columns) */}
             {activeSubItem.pdfs?.length > 0 && (
                 <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem] mt-12">
                     <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-slate-800">
@@ -170,7 +192,7 @@ const DetailView = ({activeSubItem, setActiveSubItem, menuData, t, isHe, uiText}
             )}
 
             {allMedia.length > 0 && <GalleryBanderole media={allMedia} isHe={isHe}/>}
-
+            
             {linkedItems.length > 0 && (
                 <div className="mt-16 mb-20">
                     <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 px-2">
