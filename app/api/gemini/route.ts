@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import {NextResponse} from 'next/server';
 
 export async function POST(req) {
     try {
-        const { customRequest, currentText } = await req.json();
+        const {customRequest, currentText} = await req.json();
         const GEMINI_KEY = process.env.GEMINI_API_KEY;
 
         if (!GEMINI_KEY) {
-            return NextResponse.json({ error: 'API Key missing' }, { status: 500 });
+            return NextResponse.json({error: 'API Key missing'}, {status: 500});
         }
 
         // 1. DYNAMIC DISCOVERY (Enhanced for 2026)
@@ -44,9 +44,9 @@ export async function POST(req) {
 
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Task: ${customRequest}\nContent: ${currentText}` }] }]
+                        contents: [{parts: [{text: `Task: ${customRequest}\nContent: ${currentText}`}]}]
                     })
                 });
 
@@ -61,8 +61,9 @@ export async function POST(req) {
                 console.warn(`❌ FAIL [${modelName}]: ${lastError}`);
 
                 // If the key itself is dead, stop immediately
-                if (lastError.toLowerCase().includes("api_key") || response.status === 401) {
-                    return NextResponse.json({ error: "Invalid API Key" }, { status: 401 });
+                // Add (lastError as any) or (lastError as string) to bypass the 'never' check
+                if ((lastError as any)?.toString().toLowerCase().includes("api_key") || response.status === 401) {
+                    return NextResponse.json({error: "Invalid API Key"}, {status: 401});
                 }
 
             } catch (err) {
@@ -73,9 +74,9 @@ export async function POST(req) {
         return NextResponse.json({
             error: "Regional Outage or Deprecated Models",
             details: lastError
-        }, { status: 500 });
+        }, {status: 500});
 
     } catch (error) {
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return NextResponse.json({error: 'Server Error'}, {status: 500});
     }
 }
