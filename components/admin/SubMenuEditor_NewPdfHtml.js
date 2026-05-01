@@ -20,7 +20,7 @@ export const subMenuEditor_NewPdfHtml = async (formData, buttonText = 'Download 
             // 2. Upload PDF
             const newBlob = await put(fileName, file, {
                 access: 'public',
-                addRandomSuffix: false,
+                addRandomSuffix: true,
                 contentType: 'application/pdf' // Explicitly set for PDFs
             });
             latestUrl = newBlob.url;

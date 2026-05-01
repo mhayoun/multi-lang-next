@@ -40,7 +40,7 @@ export const subMenuEditor_NewSrcHtml = async (formData, altText = 'image') => {
             console.log("[Server] Not found. Uploading new blob...");
             const newBlob = await put(fileName, file, {
                 access: 'public',
-                addRandomSuffix: false
+                addRandomSuffix: true
             });
             latestUrl = newBlob.url;
         }
